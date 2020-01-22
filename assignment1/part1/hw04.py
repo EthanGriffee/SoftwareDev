@@ -1,7 +1,10 @@
+import sys
+
 def scan(input_file, starting_line):
     longest_row_number = 0
     longest_row_length = starting_line
     longest_row_dict = []
+    every_row_dict = []
     # check startingline + 500 isnt eof
     for i in range(0, XXXXX):
         row = input_file.readline()
@@ -48,7 +51,17 @@ def scan(input_file, starting_line):
 
             elif row[curr_char] != ">":
                 curr_char += 1
-                while row
+                end_char = row.find(" ", curr_char)
+                end_char2 = row.find(">", curr_char)
+                if end_char > end_char2:
+                    end_char = end_char2
+                if end_char == -1:
+                    end_char = end_char2
+                if end_char - curr_char < 255 and end_char != -1:
+                    curr_char = end_char
+                    row_dict[row_length] = "STRING"
+                else:
+                    error
 
             while row[curr_char] == " ":
                 curr_char += 1
@@ -57,10 +70,10 @@ def scan(input_file, starting_line):
                 row_length += 1
             else:
                 error
-
+        every_row_dict[i] = row_dict
         if row_length > longest_row_length:
             longest_row_length = row_length
-            longest_row = i
+            longest_row_number = i
             longest_row_dict = row_dict
 
 
