@@ -3,99 +3,106 @@ import sys
 longest_row_number, longest_row_length = 0, 0
 every_row_dict = []
 
+def error():
+    raise Exception("bad input")
+
+def parserow(row):
+    curr_char = 0 
+    row_length = 0
+    row_dict = []
+    while curr_char < len(row):
+        def scan_digits(curr_char):
+            curr_char += 1
+            while row[curr_char].isdigit():
+                curr_char += 1
+            return curr_char
+        if row[curr_char] == "\n":
+            break
+
+        while row[curr_char] == " ":
+            curr_char += 1
+        if row[curr_char] == "<":
+            curr_char += 1
+            while row[curr_char] == " ":
+                curr_char += 1
+        else:
+            error()
+            
+        if row[curr_char] == "\"":
+            beginning_char = curr_char
+            curr_char += 1
+            end_char = row.find("\"", curr_char)
+            if end_char - curr_char < 255 and end_char != -1:
+                row_dict.append(("STRING", row[curr_char: end_char]))
+                curr_char = end_char + 1
+            else:
+                error()
+
+        elif (row[curr_char] == "1" or row[curr_char] == "0") and (row[curr_char + 1] == " " or row[curr_char + 1] == ">"):
+            row_dict.append(("BOOL", row[curr_char]))
+            curr_char += 1
+        
+        elif row[curr_char] == "+" or row[curr_char] == "-" or row[curr_char].isdigit():
+            beginning_char = curr_char
+            curr_char = scan_digits(curr_char)
+            row_dict.append(("INTEGER", row[beginning_char:curr_char]))
+            if row[curr_char] == ".":
+                curr_char = scan_digits(curr_char)
+                row_dict[row_length] = ("FLOAT", row[beginning_char:curr_char])
+        
+        elif row[curr_char] == ".":
+            beginning_char = curr_char
+            curr_char = scan_digits(curr_char)
+            row_dict.append(("FLOAT", row[beginning_char:curr_char]))
+
+        elif row[curr_char] != ">":
+            beginning_char = curr_char
+            curr_char += 1
+            end_char = row.find(" ", curr_char)
+            end_char2 = row.find(">", curr_char)
+            if end_char > end_char2:
+                end_char = end_char2
+            if end_char == -1:
+                end_char = end_char2
+            if end_char - curr_char < 255 and end_char != -1:
+                curr_char = end_char
+                row_dict.append(("STRING", row[beginning_char:curr_char]))
+            else:
+                error()
+        else:
+            row_dict.append(("EMPTY", "<>"))
+
+        while row[curr_char] == " ":
+            curr_char += 1
+
+        if row[curr_char] == ">":
+            curr_char += 1
+            row_length += 1
+        else:
+            error()
+    return (row_length, row_dict)
+
 def scan(input_file, length):
     global longest_row_number, longest_row_length 
-
-    def error():
-        raise Exception("bad input")
 
     # check startingline + 500 isnt eof
     byte_count = 0 
     row_number = 0
     while byte_count < length :
+        if row_number > 500:
+            break
         row = input_file.readline()
         byte_count += len(row)
         if byte_count > length or row == "":
             return
-        curr_char = 0
-        row_length = 0
-        row_dict = []
-        while curr_char < len(row):
-            def scan_digits(curr_char):
-                curr_char += 1
-                while row[curr_char].isdigit():
-                    curr_char += 1
-                return curr_char
-            if row[curr_char] == "\n":
-                break
-
-            while row[curr_char] == " ":
-                curr_char += 1
-            if row[curr_char] == "<":
-                curr_char += 1
-                while row[curr_char] == " ":
-                    curr_char += 1
-            else:
-                error()
-                
-            if row[curr_char] == "\"":
-                beginning_char = curr_char
-                curr_char += 1
-                end_char = row.find("\"", curr_char)
-                if end_char - curr_char < 255 and end_char != -1:
-                    row_dict.append(("STRING", row[curr_char: end_char]))
-                    curr_char = end_char + 1
-                else:
-                    error()
-
-            elif (row[curr_char] == "1" or row[curr_char] == "0") and (row[curr_char + 1] == " " or row[curr_char + 1] == ">"):
-                row_dict.append(("BOOL", row[curr_char]))
-                curr_char += 1
-            
-            elif row[curr_char] == "+" or row[curr_char] == "-" or row[curr_char].isdigit():
-                beginning_char = curr_char
-                curr_char = scan_digits(curr_char)
-                row_dict.append(("INTEGER", row[beginning_char:curr_char]))
-                if row[curr_char] == ".":
-                    curr_char = scan_digits(curr_char)
-                    row_dict[row_length] = ("FLOAT", row[beginning_char:curr_char])
-            
-            elif row[curr_char] == ".":
-                beginning_char = curr_char
-                curr_char = scan_digits(curr_char)
-                row_dict.append(("FLOAT", row[beginning_char:curr_char]))
-
-            elif row[curr_char] != ">":
-                beginning_char = curr_char
-                curr_char += 1
-                end_char = row.find(" ", curr_char)
-                end_char2 = row.find(">", curr_char)
-                if end_char > end_char2:
-                    end_char = end_char2
-                if end_char == -1:
-                    end_char = end_char2
-                if end_char - curr_char < 255 and end_char != -1:
-                    curr_char = end_char
-                    row_dict.append(("STRING", row[beginning_char:curr_char]))
-                else:
-                    error()
-            else:
-                row_dict.append(("EMPTY", "<>"))
-
-            while row[curr_char] == " ":
-                curr_char += 1
-
-            if row[curr_char] == ">":
-                curr_char += 1
-                row_length += 1
-            else:
-                error()
+        row_length, row_dict = parserow(row)
         every_row_dict.append(row_dict)
         if row_length > longest_row_length:
             longest_row_number = row_number
             longest_row_length = row_length
             
         row_number += 1
+    return row_number
 
 
                 
@@ -105,6 +112,7 @@ col_index = False
 col_type = False
 file_name = ""
 starting_pos = 0
+row_num = 0
 num_bytes = -1
 while x < len(sys.argv):
     flag = sys.argv[x]
@@ -144,8 +152,24 @@ if file_name == "":
     raise Exception("expected file input")
 
 f = open(file_name)
-f.seek(starting_pos)
-scan(f, num_bytes)
+print(int (starting_pos))
+f.seek(int (starting_pos), 0)
+if starting_pos != 0:
+    f.readline()
+row_number = scan(f, num_bytes)
+
+while row_num > row_number:
+    every_row_dict.append(f.readline())
+    row_number += 1
+
+if row_num == row_number:
+    line_checking = f.readline()
+    print(line_checking)
+    if line_checking == "":
+        raise Exception("Row index is out of bounds")
+    row_dict = parserow(line_checking)[1]
+    every_row_dict.append(row_dict)
+
 
 # To do, add row checking
 if missing_index:
