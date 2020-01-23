@@ -1,16 +1,40 @@
-import sys
+#!/usr/bin/env python
+import sys, os
 
+# The longest row number is the index of the schema, based on the longest row
+# The longest row length is the number of fields in the longest row
 longest_row_number, longest_row_length = 0, 0
+
+# 2D array containing tuples represeting the field type, and the value at each row,col or
+# an empty row representing a row that was not parsed
 every_row_array = []
+
+# number of bytes input by the user
+input_bytes = -1
+
+# number of bytes currently read
+byte_count = 0
 
 def error():
     raise Exception("bad input")
 
+# Takes in the current row index, returns a tuple of the number of fields in the row
+# and an array of field types representing what was held in the row
 def parserow(curr_row):
+
+    # the current character being parsed in the row
     curr_char = 0 
+
+    # the number of fields in the row
     row_length = 0
+
+    # an array containg a tuple of field types and fields for the row 
     row_array = []
+
+    # Loops through the current row, until it reaches the end
     while curr_char < len(curr_row):
+
+        # adds 1 to the current character while it is reading a digit
         def scan_digits(curr_char):
             curr_char += 1
             while curr_row[curr_char].isdigit():
@@ -18,30 +42,38 @@ def parserow(curr_row):
             return curr_char
         if curr_row[curr_char] == "\n":
             break
-
+        
+        # removes leading spaces
         while curr_row[curr_char] == " ":
             curr_char += 1
+
+        # checks the start of a sor
         if curr_row[curr_char] == "<":
             curr_char += 1
+            
+            #removes spaces at the start
             while curr_row[curr_char] == " ":
                 curr_char += 1
         else:
             error()
             
+        # checks for a string field with quotes
         if curr_row[curr_char] == "\"":
             beginning_char = curr_char
             curr_char += 1
             end_char = curr_row.find("\"", curr_char)
             if end_char - curr_char < 255 and end_char != -1:
-                row_array.append(("STRING", row[curr_char: end_char]))
+                row_array.append(("STRING", curr_row[curr_char: end_char]))
                 curr_char = end_char + 1
             else:
                 error()
 
+        # checks for a boolean field
         elif (curr_row[curr_char] == "1" or curr_row[curr_char] == "0") and (curr_row[curr_char + 1] == " " or curr_row[curr_char + 1] == ">"):
             row_array.append(("BOOL", curr_row[curr_char]))
             curr_char += 1
-        
+  
+        # checks if a + or - is followed by an int or float
         elif curr_row[curr_char] == "+" or curr_row[curr_char] == "-" or curr_row[curr_char].isdigit():
             beginning_char = curr_char
             curr_char = scan_digits(curr_char)
@@ -50,11 +82,14 @@ def parserow(curr_row):
                 curr_char = scan_digits(curr_char)
                 row_array[row_length] = ("FLOAT", curr_row[beginning_char:curr_char])
         
+        # checks for a float field beginning with "."
         elif curr_row[curr_char] == ".":
             beginning_char = curr_char
             curr_char = scan_digits(curr_char)
             row_array.append(("FLOAT", curr_row[beginning_char:curr_char]))
 
+
+        # checks for a string without quotes
         elif curr_row[curr_char] != ">":
             beginning_char = curr_char
             curr_char += 1
@@ -72,9 +107,11 @@ def parserow(curr_row):
         else:
             row_array.append(("EMPTY", "<>"))
 
+        # removes trailing spaces
         while curr_row[curr_char] == " ":
             curr_char += 1
 
+        # checks for a end of field '>' and returns an error if it does not
         if curr_row[curr_char] == ">":
             curr_char += 1
             row_length += 1
@@ -82,19 +119,21 @@ def parserow(curr_row):
             error()
     return (row_length, row_array)
 
-def scan(input_file, length):
-    global longest_row_number, longest_row_length 
+# Reads the first 500 rows, or to the end of the file and populates a 2D-array containing
+# tuples represeting the Field Type, and the value at each row, col
+def scan(input_file):
+    global longest_row_number, longest_row_length, byte_count
 
     # check startingline + 500 isnt eof
-    byte_count = 0 
     row_number = 0
-    while byte_count < length :
+    while byte_count < input_bytes :
         if row_number > 500:
             break
         row = input_file.readline()
         byte_count += len(row)
-        if byte_count > length or row == "":
-            return
+        if byte_count > input_bytes or row == "":
+            every_row_array.append(row)
+            return row_number
         row_length, row_array = parserow(row)
         every_row_array.append(row_array)
         if row_length > longest_row_length:
@@ -111,9 +150,9 @@ missing_index = False
 col_index = False
 col_type = False
 file_name = ""
-starting_pos = 0
+starting_pos = "0"
+input_row_num = -1
 row_num = 0
-num_bytes = -1
 while x < len(sys.argv):
     flag = sys.argv[x]
 
@@ -127,11 +166,13 @@ while x < len(sys.argv):
 
     elif flag == "-len":
         x += 1
-        num_bytes = sys.argv[x]
+        input_bytes = sys.argv[x]
 
     elif flag == "-print_col_type":
         x += 1
         input_col_num = int(sys.argv[x])
+        if col_index or missing_index or col_type:
+            raise Exception("Check your arguments!!!")
         col_type = True
 
     elif flag == "-print_col_idx":
@@ -139,6 +180,8 @@ while x < len(sys.argv):
         input_col_num = int(sys.argv[x])
         x += 1
         input_row_num = int(sys.argv[x])
+        if col_index or missing_index or col_type:
+            raise Exception("Check your arguments!!!")
         col_index = True
 
     elif flag == "-is_missing_idx":
@@ -146,37 +189,39 @@ while x < len(sys.argv):
         input_col_num = int(sys.argv[x])
         x += 1
         input_row_num = int(sys.argv[x])
+        if col_index or missing_index or col_type:
+            raise Exception("Check your arguments!!!")
         missing_index = True
+
     x += 1
 if file_name == "":
     raise Exception("expected file input")
 
 f = open(file_name)
-print(int (starting_pos))
-f.seek(int (starting_pos), 0)
-if starting_pos != 0:
+if input_bytes == -1:
+    input_bytes = os.fstat(f.fileno()).st_size
+f.seek(int (starting_pos))
+if starting_pos != "0":
     f.readline()
-row_number = scan(f, num_bytes)
+row_number = scan(f)
 
 while input_row_num > row_number:
-    every_row_array.append(f.readline())
+    curr = f.readline()
+    byte_count += len(curr)
+    every_row_array.append("")
     row_number += 1
 
 if input_row_num == row_number:
     line_checking = f.readline()
-    print(line_checking)
     if line_checking == "":
         raise Exception("Row index is out of bounds")
     row_array = parserow(line_checking)[1]
     every_row_array.append(row_array)
 
-
-# To do, add row checking
 if missing_index:
-    if input_col_num >= longest_row_length:
+    if input_col_num >= longest_row_length or len(every_row_array[input_row_num]) <= input_row_num:
         print("True")
     else:
-        print("{} {}".format(every_row_array[longest_row_number][input_col_num][0], every_row_array[input_row_num][input_col_num][0]))
         print(every_row_array[longest_row_number][input_col_num] != every_row_array[input_row_num][input_col_num])
 
 if col_index:
