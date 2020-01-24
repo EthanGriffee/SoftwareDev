@@ -16,7 +16,7 @@ input_bytes = -1
 byte_count = 0
 
 def error():
-    raise Exception("bad input")
+    raise Exception("Invalid sor file")
 
 # Takes in the current row index, returns a tuple of the number of fields in the row
 # and an array of field types representing what was held in the row
@@ -128,7 +128,7 @@ def scan(input_file):
     row_number = 0
 
     # loops and parses through the 500 rows to determine the schema
-    while row_number > 500 :
+    while row_number < 500 :
         row = input_file.readline()
         byte_count += len(row)
 
@@ -158,13 +158,21 @@ col_type = False
 input_col_num = -1
 input_row_num = -1
 file_name = ""
-starting_pos = "0"
+starting_pos = 0
 input_row_num = -1
 row_num = 0
 
 # iterates through arguments
 while x < len(sys.argv):
     flag = sys.argv[x]
+        
+    def check_arg():
+        if missing_index or col_index or col_type:
+            raise Exception("Check your arguments!!!")
+    def check_int(i):
+        if not i.isdigit():
+            raise Exception("Check your arguments!!!")
+        return int(i)
 
     # looks for file flag followed by the file name
     if flag == "-f":
@@ -174,45 +182,43 @@ while x < len(sys.argv):
     # looks for from flag followed by the starting position (in bytes)
     elif flag == "-from":
         x += 1
-        starting_pos = sys.argv[x]
+        starting_pos = check_int(sys.argv[x])
 
     # looks for len flag which is followed by the number of bytes to read
     elif flag == "-len":
         x += 1
-        input_bytes = sys.argv[x]
+        input_bytes = check_int(sys.argv[x])
 
     # looks for the print_col_type flag which is followed by the column whose field type
     # will be printed. Throws error if used with print_col_idx or is_missing_indx
     elif flag == "-print_col_type":
-        if input_col_num != -1:
-            raise Exception("Check your arguments!!!")
+        check_arg()
         x += 1
-        input_col_num = int(sys.argv[x])
+        input_col_num = check_int(sys.argv[x])
         col_type = True
 
     # looks for the print_col_idx flag which is followed by the column and offest whose 
     # field will be printed. Throws error if used with print_col_type or is_missing_indx
     elif flag == "-print_col_idx":
-        if input_col_num != -1:
-            raise Exception("Check your arguments!!!")
+        check_arg()
         x += 1
-        input_col_num = int(sys.argv[x])
+
+        input_col_num = check_int(sys.argv[x])
         x += 1
-        input_row_num = int(sys.argv[x])
+        input_row_num = check_int(sys.argv[x])
         col_index = True
 
     # looks for the is_missing_idx flag which is followed by the column and offest whose 
     # field will checked. Throws error if used with print_col_type or print_col_idx
     elif flag == "-is_missing_idx":
-        if input_col_num != -1:
-            raise Exception("Check your arguments!!!")
+        check_arg()
         x += 1
-        input_col_num = int(sys.argv[x])
+        input_col_num = check_int(sys.argv[x])
         x += 1
-        input_row_num = int(sys.argv[x])
+        input_row_num = check_int(sys.argv[x])
         missing_index = True
-
     x += 1
+
 if file_name == "":
     raise Exception("expected file input")
 
@@ -220,7 +226,7 @@ f = open(file_name)
 if input_bytes == -1:
     input_bytes = os.fstat(f.fileno()).st_size
 f.seek(int (starting_pos))
-if starting_pos != "0":
+if starting_pos != 0:
     f.readline()
 row_number = scan(f)
 
@@ -240,12 +246,14 @@ if input_row_num == row_number:
     row_array = parserow(line_checking)[1]
     every_row_array.append(row_array)
 
+# Chacks the row given against the longest row to see if it is missing an index
 if missing_index:
     if input_col_num >= longest_row_length or len(every_row_array[input_row_num]) <= input_row_num:
         print("True")
     else:
         print(every_row_array[longest_row_number][input_col_num] != every_row_array[input_row_num][input_col_num])
 
+# Returns the field at the column index, offset
 if col_index:
     if input_col_num < longest_row_length:
         if len(every_row_array[input_row_num]) <= input_col_num:
@@ -257,6 +265,7 @@ if col_index:
     else:
         raise Exception("column index is out of bounds")
 
+# Checks the longest row for column indexes
 if col_type:
     if input_col_num > longest_row_length:
         raise Exception("column index is out of bounds")
