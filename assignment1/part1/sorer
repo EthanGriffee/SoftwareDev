@@ -126,16 +126,22 @@ def scan(input_file):
 
     # check startingline + 500 isnt eof
     row_number = 0
-    while byte_count < input_bytes :
-        if row_number > 500:
-            break
+
+    # loops and parses through the 500 rows to determine the schema
+    while row_number > 500 :
         row = input_file.readline()
         byte_count += len(row)
+
+        # exits the parsing if the number of bytes has exceeded the input or
+        # it has reached the end of the file
         if byte_count > input_bytes or row == "":
-            every_row_array.append(row)
             return row_number
+
+        # parses the line
         row_length, row_array = parserow(row)
         every_row_array.append(row_array)
+
+        # sets the longest row if this row's length is greater than the longest length
         if row_length > longest_row_length:
             longest_row_number = row_number
             longest_row_length = row_length
@@ -149,48 +155,61 @@ x = 0
 missing_index = False
 col_index = False
 col_type = False
+input_col_num = -1
+input_row_num = -1
 file_name = ""
 starting_pos = "0"
 input_row_num = -1
 row_num = 0
+
+# iterates through arguments
 while x < len(sys.argv):
     flag = sys.argv[x]
 
+    # looks for file flag followed by the file name
     if flag == "-f":
         x += 1
         file_name = sys.argv[x]
 
+    # looks for from flag followed by the starting position (in bytes)
     elif flag == "-from":
         x += 1
         starting_pos = sys.argv[x]
 
+    # looks for len flag which is followed by the number of bytes to read
     elif flag == "-len":
         x += 1
         input_bytes = sys.argv[x]
 
+    # looks for the print_col_type flag which is followed by the column whose field type
+    # will be printed. Throws error if used with print_col_idx or is_missing_indx
     elif flag == "-print_col_type":
+        if input_col_num != -1:
+            raise Exception("Check your arguments!!!")
         x += 1
         input_col_num = int(sys.argv[x])
-        if col_index or missing_index or col_type:
-            raise Exception("Check your arguments!!!")
         col_type = True
 
+    # looks for the print_col_idx flag which is followed by the column and offest whose 
+    # field will be printed. Throws error if used with print_col_type or is_missing_indx
     elif flag == "-print_col_idx":
+        if input_col_num != -1:
+            raise Exception("Check your arguments!!!")
         x += 1
         input_col_num = int(sys.argv[x])
         x += 1
         input_row_num = int(sys.argv[x])
-        if col_index or missing_index or col_type:
-            raise Exception("Check your arguments!!!")
         col_index = True
 
+    # looks for the is_missing_idx flag which is followed by the column and offest whose 
+    # field will checked. Throws error if used with print_col_type or print_col_idx
     elif flag == "-is_missing_idx":
+        if input_col_num != -1:
+            raise Exception("Check your arguments!!!")
         x += 1
         input_col_num = int(sys.argv[x])
         x += 1
         input_row_num = int(sys.argv[x])
-        if col_index or missing_index or col_type:
-            raise Exception("Check your arguments!!!")
         missing_index = True
 
     x += 1
@@ -205,12 +224,15 @@ if starting_pos != "0":
     f.readline()
 row_number = scan(f)
 
+# if the input row is not one of the first 500 scanned,
+# read lines until it gets to the input row
 while input_row_num > row_number:
     curr = f.readline()
     byte_count += len(curr)
     every_row_array.append("")
     row_number += 1
 
+# Reads and parses through the input row
 if input_row_num == row_number:
     line_checking = f.readline()
     if line_checking == "":
