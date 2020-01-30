@@ -2,115 +2,273 @@
 #include <iostream>
 #include <assert.h>
 #include "object.h"
+#include "string.h"
 #include "queue.h"
 
 void println(const char* value) {
   std::cout << value << std::endl;
 }
 
-void test_object() {
-  println("---- Testing Object ----");
-  Object* o1 = new Object();
-  assert(o1->equals(o1));
-  Object* o2 = new Object();
-  assert(!o2->equals(o1));
-  assert(o2->hash() != 0);
-  assert(o2->hash() != o1->hash());
-  delete o1;
-  delete o2;
-  println("---- Object Passed ----");
+void test_queue_constructor_destructor() {
+  println("test_queue_constructor pending");
+  Queue* q = new Queue();
+  assert(q != nullptr);
+  delete q;
+  println("test_queue_constructor passed");
 }
 
-void test_string() {
-  println("---- Testing String ----");
-  String* s0 = new String();
-  String* s1 = new String("Hello");
-  assert(s1->equals(s1));
-
-  String* s01 = s0->concat(*s1);
-  assert(s01->equals(s1));
-  String* s2 = new String(*s01);
-  assert(s1->equals(s2));
-
-  assert(s1->length() == 5);
-  String x0("ll");
-  String x1("$");
-
-  assert(s1->find(x0) == 2);
-  assert(s1->find(x1) > s1->length());
-
-  String* sub1 = new String("He");
-  assert(s1->substring(0, s1->length())->equals(s1));
-  assert(s1->substring(0, 2)->equals(sub1));
-
-  assert(s1->char_at(4) == 'o');
-  assert(s1->hash() == s01->hash());
-
-  delete s1;
-  delete s0;
-  delete s01;
-  delete s2;
-  delete sub1;
-
-  println("---- String Passed ----");
-}
-
-void test_queue() {
-  println("---- Testing Queue ----");
-  Queue* q0 = new Queue();
+void test_queue_enqueue() {
+  println("test_queue_enqueue pending");
+  Queue* q = new Queue();
   Object* o = new Object();
-  Object* p = new Object();
-  Object* q = new Object();
-  q0->enqueue(o);
-  q0->enqueue(p);
-  assert(q0->dequeue()->equals(o));
-  q0->enqueue(q);
-  assert(q0->dequeue()->equals(p));
-  q0->enqueue(p);
-  q0->enqueue(o);
-  assert(!q0->is_empty());
-  assert(q0->size() == 3);
+  assert(q->size() == 0);
+  q->enqueue(o);
+  assert(q->size() == 1);
+  delete q;
+  println("test_queue_enqueue passed");
+}
 
+void test_queue_dequeue() {
+  println("test_queue_dequeue pending");
+  Queue* q = new Queue();
+  Object* o = new Object();
+  q->enqueue(o);
+  assert(q->size() == 1);
+  assert(o->equals(q->dequeue()));
+  assert(q->size() == 0);
+  assert(q->dequeue() == nullptr);
+  delete o;
+  delete q;
+  println("test_queue_dequeue passed");
+}
+
+void test_queue_peek() {
+  println("test_queue_peek pending");
+  Queue* q = new Queue();
+  Object* o = new Object();
+  q->enqueue(o);
+  assert(q->size() == 1);
+  assert(o->equals(q->peek())); 
+  q->dequeue();
+  assert(q->peek() == nullptr);
+  delete o;
+  delete q;
+  println("test_queue_peek passed");
+}
+
+void test_queue_size() {
+  println("test_queue_size pending");
+  Queue* q = new Queue();
+  for (uint i = 0; i < 100; i++) {
+    assert(q->size() == i);
+    q->enqueue(new Object());
+  }
+  for (uint i = 100; i > 0; i--) {
+    assert(q->size() == i);
+    delete q->dequeue();
+  }
+  assert(q->size() == 0);
+  delete q;
+  println("test_queue_size passed");
+}
+
+void test_queue_is_empty() {
+  println("test_queue_is_empty pending");
+  Queue *q = new Queue();
+  assert(q->is_empty());
+  q->enqueue(new Object());
+  assert(!q->is_empty());
+  delete q;
+  println("test_queue_is_empty passed");
+}
+
+void test_queue_clear() {
+  println("test_queue_clear pending");
+  Queue *q = new Queue();
+  for (uint i = 0; i < 10; i++) {
+    q->enqueue(new Object());
+  }
+  assert(q->size() > 0);
+  q->clear();
+  assert(q->size() == 0);
+  delete q;
+  println("test_queue_clear passed");
+}
+
+void test_queue_equality() {
+  println("test_queue_equality pending");
   Queue* q1 = new Queue();
-  String* a = new String("A");
-  String* b = new String("B");
-  String* c = new String("C");
-
-  q1->enqueue(a);
-  q1->enqueue(b);
-  q1->enqueue(c);
-
-  assert(!q1->is_empty());
-  assert(q1->size() == 3);
-
-  assert(q1->peek()->equals(a));
-  assert(q1->dequeue()->equals(a));
-  assert(q1->size() == 2);
-
   Queue* q2 = new Queue();
-  q2->enqueue(b);
-  q2->enqueue(c);
 
   assert(q1->equals(q2));
   assert(q1->hash() == q2->hash());
 
-  Queue *q3 = new Queue(*q2);
-  assert(q1->equals(q3));
-  q3->clear();
+  Object* o1 = new Object();
+  q1->enqueue(o1);
+  assert(!q1->equals(q2));
+  q2->enqueue(o1);
+  assert(q1->equals(q2));
+  delete q1;
+  println("test_queue_equality passed");
+}
 
-  assert(q3->size() == 0);
-  assert(q3->is_empty());
+void test_queue_complex() {
+  println("test_queue_complex pending");
+  Queue *q = new Queue();
+  for (uint i = 0; i < 1000; i++) {
+    if (i % 2 == 0) {
+      q->enqueue(new Object());
+      q->enqueue(new Object());
+      q->enqueue(new Object());
+    } else {
+      delete q->dequeue();
+    }
+  }
+  delete q;
+  println("test_queue_complex passed");
+}
 
-  delete a;
-  delete q0;
+void test_strqueue_constructor_destructor() {
+  println("test_strqueue_constructor pending");
+  StrQueue* q = new StrQueue();
+  assert(q != nullptr);
+  delete q;
+  println("test_strqueue_constructor passed");
+}
+
+void test_strqueue_enqueue() {
+  println("test_strqueue_enqueue pending");
+  StrQueue* q = new StrQueue();
+  String* s = new String("Hello");
+  assert(q->size() == 0);
+  q->enqueue(s);
+  assert(q->size() == 1);
+  delete q;
+  println("test_strqueue_enqueue passed");
+}
+
+void test_strqueue_dequeue() {
+  println("test_strqueue_dequeue pending");
+  StrQueue* q = new StrQueue();
+  String* s = new String("Testing");
+  q->enqueue(s);
+  assert(q->size() == 1);
+  assert(s->equals(q->dequeue()));
+  assert(q->size() == 0);
+  assert(q->dequeue() == nullptr);
+  delete s;
+  delete q;
+  println("test_strqueue_dequeue passed");
+}
+
+void test_strqueue_peek() {
+  println("test_strqueue_peek pending");
+  StrQueue* q = new StrQueue();
+  String* s = new String("Look ma! No hands");
+  q->enqueue(s);
+  assert(q->size() == 1);
+  assert(s->equals(q->peek())); 
+  q->dequeue();
+  assert(q->peek() == nullptr);
+  delete s;
+  delete q;
+  println("test_strqueue_peek passed");
+}
+
+void test_strqueue_size() {
+  println("test_strqueue_size pending");
+  StrQueue* q = new StrQueue();
+  for (uint i = 0; i < 100; i++) {
+    assert(q->size() == i);
+    q->enqueue(new String());
+  }
+  for (uint i = 100; i > 0; i--) {
+    assert(q->size() == i);
+    delete q->dequeue();
+  }
+  assert(q->size() == 0);
+  delete q;
+  println("test_strqueue_size passed");
+}
+
+void test_strqueue_is_empty() {
+  println("test_strqueue_is_empty pending");
+  StrQueue *q = new StrQueue();
+  assert(q->is_empty());
+  q->enqueue(new String());
+  assert(!q->is_empty());
+  delete q;
+  println("test_strqueue_is_empty passed");
+}
+
+void test_strqueue_clear() {
+  println("test_strqueue_clear pending");
+  StrQueue *q = new StrQueue();
+  for (uint i = 0; i < 10; i++) {
+    q->enqueue(new String());
+  }
+  assert(q->size() > 0);
+  q->clear();
+  assert(q->size() == 0);
+  delete q;
+  println("test_strqueue_clear passed");
+}
+
+void test_strqueue_equality() {
+  println("test_strqueue_equality pending");
+  StrQueue* q1 = new StrQueue();
+  StrQueue* q2 = new StrQueue();
+
+  assert(q1->equals(q2));
+  assert(q1->hash() == q2->hash());
+
+  q1->enqueue(new String("Foo"));
+  assert(!q1->equals(q2));
+  q2->enqueue(new String("Bar"));
+  assert(!q1->equals(q2));
+  delete q2->dequeue();
+  q2->enqueue(new String("Foo"));
+  assert(q1->equals(q2));
+
   delete q1;
   delete q2;
-  delete q3;
-  println("---- Queue Passed ----");
+  println("test_strqueue_equality passed");
+}
+
+void test_strqueue_complex() {
+  println("test_strqueue_complex pending");
+  StrQueue *q = new StrQueue();
+  for (uint i = 0; i < 1000; i++) {
+    if (i % 2 == 0) {
+      q->enqueue(new String("Foo"));
+      q->enqueue(new String("Bar"));
+      q->enqueue(new String("Baz"));
+    } else {
+      delete q->dequeue();
+    }
+  }
+  delete q;
+  println("test_strqueue_complex passed");
 }
 
 int main() {
-  test_object();
-  test_string();
-  test_queue();
+  test_queue_constructor_destructor();
+  test_queue_enqueue();
+  test_queue_dequeue();
+  test_queue_peek();
+  test_queue_size();
+  test_queue_is_empty();
+  test_queue_clear();
+  test_queue_equality();
+  test_queue_complex();
+
+  test_strqueue_constructor_destructor();
+  test_strqueue_enqueue();
+  test_strqueue_dequeue();
+  test_strqueue_peek();
+  test_strqueue_size();
+  test_strqueue_is_empty();
+  test_strqueue_clear();
+  test_strqueue_equality();
+  test_strqueue_complex();
 }

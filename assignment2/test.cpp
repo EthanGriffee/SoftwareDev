@@ -39,6 +39,11 @@ class TestArrayMethods {
         s2 = new String("Bravo");
         s3 = new String("Charlie");
         s4 = new String("Delta");
+        starr = new StringArray();
+        starr2 = new StringArray();
+        starr3 = new StringArray();
+        starr4 = new StringArray();
+
     }
 
     void clear() {
@@ -75,10 +80,10 @@ class TestArrayMethods {
         cout->pln("Add at beginning works");
         arr->add(c, 1);
         cout->t_true(arr->get(1)->equals(c));
-        cout->t_true(arr->get(2)->equals(b));
+        cout->t_true(arr->get(2)->equals(a));
         cout->pln("Add at middle works");
         arr->add(d, 3);
-        cout->t_true(arr->get(2)->equals(b));
+        cout->t_true(arr->get(2)->equals(a));
         cout->t_true(arr->get(3)->equals(d));
         cout->pln("Add at end works");
         clear();
@@ -101,7 +106,7 @@ class TestArrayMethods {
         cout->pln("Add All works at beginning");
         arr4->add(d);
         arr4->add(d);
-        arr->addAll(arr4, 1);
+        arr->addAll(arr4,1);
         cout->t_true(arr->get(1)->equals(d));
         cout->t_true(arr->get(2)->equals(d));
         cout->t_true(arr->get(3)->equals(b));
@@ -148,7 +153,7 @@ class TestArrayMethods {
         arr3->add(b);
         arr3->add(c);
         cout->t_true(sub2->equals(arr3));
-        Array* sub3 = arr->subArray(0,3);
+        Array* sub3 = arr->subArray(1,4);
         arr4->add(b);
         arr4->add(c);
         arr4->add(d);
@@ -183,11 +188,11 @@ class TestArrayMethods {
         cout->t_true(starr3->getSize() == 5);
         starr3->removeAll(s3);
         cout->t_true(starr3->getSize() == 2);
-        s = (String*) starr->get(0);
+        s = (String*) starr3->get(0);
         cout->t_true(s->equals(s1));
-        starr->remove(s1);
+        starr3->remove(s1);
         cout->t_true(starr3->getSize() == 1);
-        s = (String*) starr->get(0);
+        s = (String*) starr3->get(0);
         cout->t_true(s->equals(s2));
         starr4 = (StringArray*) starr->subArray(3,5);
         cout->t_true(starr4->equals(starr2));
