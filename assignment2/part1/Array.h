@@ -384,7 +384,7 @@ class StringArray : public Object {
      * @arg to_add Array of String that all need to be added to this array. 
      **/
      void addAll(StringArray* to_add) {
-         return str_arr->addAll(to_add);
+         return str_arr->addAll(to_add->str_arr);
      }
 
     /**
@@ -414,7 +414,7 @@ class StringArray : public Object {
      * @arg index Location to add the objects to the array at
      **/
      void addAll(StringArray* to_add, size_t index) {
-        str_arr->addAll(to_add, index);
+        str_arr->addAll(to_add->str_arr, index);
      }
 
     /**
@@ -477,7 +477,7 @@ class StringArray : public Object {
      * Returns number of elements in the array. 
      **/
      size_t getSize() {
-         return str_arr->getSize;
+         return str_arr->getSize();
      }
 
     /**
@@ -487,49 +487,68 @@ class StringArray : public Object {
      * If the given object is NULL or not an array, then false will be returned.
      * @arg other Object to check if this array is equal to
      **/
-    bool equals(Object* other);
+    bool equals(Object* other) {
+        StringArray* o = dynamic_cast<StringArray*> (other);
+        return o->str_arr->equals(this->str_arr);
+    }
 
     /**
      * Overriding the Object hash_me() method. 
      * Hashes the array based on user specifications. Default implementation is
      * to hash all internal elements and sum them up. 
      **/
-    size_t hash_me_();
+    size_t hash_me_() {
+        return str_arr->hash() + 1;
+    }
 
 };
 
 
 class IntArray : public Object {
     public:
-     /**
-     * Default constructor which will set the initial max-capacity to the array to 10. 
-     **/
-    IntArray();
+        Array* int_arr;
+        /**
+         * Default constructor which will set the initial max-capacity to the array to 10. 
+         **/
+        IntArray() {
+            int_arr = new Array();
+        }
 
     /**
      * Initalized this array with the characteristics of the passed in array.
      * @arg arr Array containing values to be used in initialization. 
      **/
-    IntArray(IntArray* arr);
+    IntArray(IntArray* arr) {
+        int_arr = arr->int_arr;
+    }
 
     /**
      * Destructor which will free the memory of the underlying array as well. 
      **/
-    ~IntArray();
+    ~IntArray() {
+        delete int_arr;
+    }
 
     /**
      * Will return the int pointer at the provided index. if the index is invalid, 
      * then the method will return NULL.
      * @arg index Location to get the value in the array at. 
      **/
-    int get(size_t index);
+    int get(size_t index) {
+        Object* obj = int_arr->get(index); 
+        if (obj) {
+            return static_cast <IntObj*> (obj)->getInt();
+        }
+    }
 
 
     /**
      * Clears the array and reinitializes the underlying array to 10 spots with no elements. 
      * Reinitializes the size to 0. 
      **/
-    void clear();
+    void clear() {
+        int_arr->clear();
+    }
 
     /**
      * Resizing the underlying array. And then copying over the elements to a new array with
@@ -537,14 +556,21 @@ class IntArray : public Object {
      * Default is doubling the array size when the max capacity of the 
      * underlying array less the number of elements is 2. 
      **/
-    void resize();
+    void resize() {
+        int_arr->resize();
+    }
 
     /**
      * Returns the first index of the of given Object pointer. 
      * If the object pointer is not found then -1 is returned.
      * @arg to_find Object to find the index of. 
      **/
-    int indexOf(int to_find);
+    int indexOf(int to_find) {
+        IntObj* to_find_obj = new IntObj(to_find);
+        int returning = int_arr->indexOf(to_find_obj);
+        delete to_find_obj;
+        return returning;
+    }
 
     /**
      * Adds the element provided to the end of the list.
@@ -552,7 +578,10 @@ class IntArray : public Object {
      * then that should be done.
      * @arg to_add int to be added to the array. 
      **/
-    void add(int to_add);
+    void add(int to_add) {
+        IntObj* int_obj = new IntObj(to_add);
+        int_arr->add(int_obj);
+    }
 
     /**
      * Adds the provided array to the end of the list, unless the given array is NULL, 
@@ -561,7 +590,9 @@ class IntArray : public Object {
      * added array. If resizing the array is necessary, then that should be done.
      * @arg to_add Array of Objects that all need to be added to this array. 
      **/
-    void addAll(IntArray* to_add);
+    void addAll(IntArray* to_add) {
+        int_arr->addAll(to_add->int_arr);
+    }
 
     /**
      * Adds the provided int at the given index. All elements previously at the index and
@@ -572,7 +603,10 @@ class IntArray : public Object {
      * @arg to_add Object to be added to the array
      * @arg index Location to add the Object at
      **/
-    void add(int to_add, size_t index);
+    void add(int to_add, size_t index) {
+        IntObj* int_obj = new IntObj(to_add);
+        int_arr->add(int_obj, index);
+    }
 
     /**
      * Adds all the elements of the provided array at the given index, 
@@ -585,14 +619,27 @@ class IntArray : public Object {
      * @arg to_add Array of Objects to be added to the array
      * @arg index Location to add the objects to the array at
      **/
-    void addAll(IntArray* to_add, size_t index);
+    void addAll(IntArray* to_add, size_t index) {
+        int_arr->addAll(to_add->int_arr, index);
+    }
 
     /**
      * Returns the subarray starting from the provided index to the end of the array. 
      * If the index is invalid, then the method returns NULL
      * @arg index Starting place for the subarray
      **/
-    IntArray* subArray(size_t index);
+    IntArray* subArray(size_t index) {
+        IntArray* returning = new IntArray();
+        if (index > getSize()) {
+            return NULL;
+        }
+        while(index < getSize()) {
+            returning->add(get(index));
+            index += 1;
+        }
+        return returning;
+        
+    }
 
     /**
      * Returns the subarray starting from the provided index to the ending index
@@ -601,7 +648,17 @@ class IntArray : public Object {
      * @arg startIndex starting place for the subarray
      * @arg endIndex location of the last object to be put in the subarray
      **/
-    IntArray* subArray(size_t startIndex, size_t endIndex);
+    IntArray* subArray(size_t startIndex, size_t endIndex) {
+        IntArray* returning = new IntArray();
+        if (endIndex > getSize() || startIndex > endIndex) {
+            return NULL;
+        }
+        while(endIndex < getSize()) {
+            returning->add(get(startIndex));
+            startIndex += 1;
+        }
+        return returning;
+    }
 
     /**
      * Removes the first instance of the given int in this array. If nothing 
@@ -609,7 +666,11 @@ class IntArray : public Object {
      * element is found.
      * @arg to_remove int to be removed from the array
      **/
-     void remove(int to_remove);
+     void remove(int to_remove) {
+         IntObj* int_obj = new IntObj(to_remove);
+         int_arr->remove(int_obj);
+         delete int_obj;
+     }
 
     /**
      * Removes all instances of the given int in this array. If nothing 
@@ -617,12 +678,18 @@ class IntArray : public Object {
      * elements there are.
      * @arg to_remove int that all instances in the array will be removed of
      **/
-     void removeAll(int to_remove);
+     void removeAll(int to_remove) {
+         IntObj* int_obj = new IntObj(to_remove);
+         int_arr->removeAll(int_obj);
+         delete int_obj;
+     }
 
     /**
      * Returns number of elements in the array. 
      **/
-    size_t getSize();
+    size_t getSize() {
+        return int_arr->getSize();
+    }
 
     /**
      * Overriding the Object equals method. 
@@ -631,207 +698,309 @@ class IntArray : public Object {
      * If the given object is NULL or not an array, then false will be returned.
      * @arg other Object to check if this array is equal to
      **/
-    bool equals(Object* other);
+    bool equals(Object* other) {
+        IntArray* o = dynamic_cast<IntArray*> (other);
+        if (o)
+            return o->int_arr->equals(this->int_arr);
+        else {
+            return false;
+        }
+    }
 
     /**
      * Overriding the Object hash_me() method. 
      * Hashes the array based on user specifications. Default implementation is
      * to hash all internal elements and sum them up. 
      **/
-    size_t hash_me_();
+    size_t hash_me_() {
+        return int_arr->hash_me_() + 2;
+    }
 };
 
 
 
 class FloatArray : public Object {
     public:
-     /**
-     * Default constructor which will set the initial max-capacity to the array to 10. 
-     **/
-    FloatArray();
+        Array* float_arr;
 
-    /**
-     * Initalized this array with the characteristics of the passed in array.
-     * @arg arr Array containing values to be used in initialization. 
-     **/
-    FloatArray(FloatArray* arr);
+        /**
+         * Default constructor which will set the initial max-capacity to the array to 10. 
+         **/
+        FloatArray() {
+            float_arr = new Array();
+        };
 
-    /**
-     * Destructor which will free the memory of the underlying array as well. 
-     **/
-    ~FloatArray();
+        /**
+         * Initalized this array with the characteristics of the passed in array.
+         * @arg arr Array containing values to be used in initialization. 
+         **/
+        FloatArray(FloatArray* arr) {
+            float_arr = arr->float_arr;
+        }
 
-    /**
-     * Will return the float pointer at the provided index. if the index is invalid, 
-     * then the method will return -1
-     * @arg index Location to get the value in the array at. 
-     **/
-    float get(size_t index);
+        /**
+         * Destructor which will free the memory of the underlying array as well. 
+         **/
+        ~FloatArray() {
+            delete float_arr;
+        }
 
+        /**
+         * Will return the float pointer at the provided index. if the index is invalid, 
+         * then the method will return -1
+         * @arg index Location to get the value in the array at. 
+         **/
+        float get(size_t index) {
+            Object* obj = float_arr->get(index); 
+            if (obj) {
+                return static_cast <FloatObj*> (obj)->getFloat();
+            }
+        }
 
-    /**
-     * Clears the array and reinitializes the underlying array to 10 spots with no elements. 
-     * Reinitializes the size to 0. 
-     **/
-    void clear();
+        /**
+         * Clears the array and reinitializes the underlying array to 10 spots with no elements. 
+         * Reinitializes the size to 0. 
+         **/
+        void clear() {
+            float_arr->clear();
+        }
 
-    /**
-     * Resizing the underlying array. And then copying over the elements to a new array with
-     * the updated size. 
-     * Default is doubling the array size when the max capacity of the 
-     * underlying array less the number of elements is 2. 
-     **/
-    void resize();
+        /**
+         * Resizing the underlying array. And then copying over the elements to a new array with
+         * the updated size. 
+         * Default is doubling the array size when the max capacity of the 
+         * underlying array less the number of elements is 2. 
+         **/
+        void resize() {
+            float_arr->resize();
+        }
 
-    /**
-     * Returns the first index of the of given float pointer. 
-     * If the object pointer is not found then -1 is returned.
-     * @arg to_find Object to find the index of. 
-     **/
-    int indexOf(float to_find);
+        /**
+         * Returns the first index of the of given float pointer. 
+         * If the object pointer is not found then -1 is returned.
+         * @arg to_find Object to find the index of. 
+         **/
+        int indexOf(float to_find) {
+            FloatObj* to_find_obj = new FloatObj(to_find);
+            int returning = float_arr->indexOf(to_find_obj);
+            delete to_find_obj;
+            return returning;
+        }
 
-    /**
-     * Adds the element provided to the end of the list.
-     *  The size is incremented by 1. If resizing the array is necessary, 
-     * then that should be done.
-     * @arg to_add int to be added to the array. 
-     **/
-    void add(float to_add);
+        /**
+         * Adds the element provided to the end of the list.
+         *  The size is incremented by 1. If resizing the array is necessary, 
+         * then that should be done.
+         * @arg to_add int to be added to the array. 
+         **/
+        void add(float to_add) {
+            FloatObj* float_obj = new FloatObj(to_add);
+            float_arr->add(float_obj);
+        }
 
-    /**
-     * Adds the provided array to the end of the list, unless the given array is NULL, 
-     * then it will not be added. 
-     * Assuming a valid move, the size of this array is incremented by the size of the 
-     * added array. If resizing the array is necessary, then that should be done.
-     * @arg to_add Array of Objects that all need to be added to this array. 
-     **/
-    void addAll(FloatArray* to_add);
+        /**
+         * Adds the provided array to the end of the list, unless the given array is NULL, 
+         * then it will not be added. 
+         * Assuming a valid move, the size of this array is incremented by the size of the 
+         * added array. If resizing the array is necessary, then that should be done.
+         * @arg to_add Array of Objects that all need to be added to this array. 
+         **/
+        void addAll(FloatArray* to_add) {
+            float_arr->addAll(to_add->float_arr);
+        }
 
-    /**
-     * Adds the provided float at the given index. All elements previously at the index and
-     * to the right will be shifted accordingly. 
-     * If the index is invalid, then nothing will be added/shifted. 
-     * The size of this array is incremented by 1. 
-     * If resizing the array is necessary, then that should be done. 
-     * @arg to_add Object to be added to the array
-     * @arg index Location to add the Object at
-     **/
-    void add(float to_add, size_t index);
+        /**
+         * Adds the provided float at the given index. All elements previously at the index and
+         * to the right will be shifted accordingly. 
+         * If the index is invalid, then nothing will be added/shifted. 
+         * The size of this array is incremented by 1. 
+         * If resizing the array is necessary, then that should be done. 
+         * @arg to_add Object to be added to the array
+         * @arg index Location to add the Object at
+         **/
+        void add(float to_add, size_t index) {
+            FloatObj* float_obj = new FloatObj(to_add);
+            float_arr->add(float_obj, index);
+        }
 
-    /**
-     * Adds all the elements of the provided array at the given index, 
-     * unless the given array is NULL, then it will not be added. Otherwise, 
-     * all elements previously at the index and
-     * to the right will be shifted accordingly by the size of the procided array, 
-     * If the index is invalid, then nothing will be added/shifted.
-     * Assuming a valid move, the size of this array is incremented by the size of the 
-     * added array.  If resizing the array is necessary, then that should be done.
-     * @arg to_add Array of Objects to be added to the array
-     * @arg index Location to add the objects to the array at
-     **/
-    void addAll(FloatArray* to_add, size_t index);
+        /**
+         * Adds all the elements of the provided array at the given index, 
+         * unless the given array is NULL, then it will not be added. Otherwise, 
+         * all elements previously at the index and
+         * to the right will be shifted accordingly by the size of the procided array, 
+         * If the index is invalid, then nothing will be added/shifted.
+         * Assuming a valid move, the size of this array is incremented by the size of the 
+         * added array.  If resizing the array is necessary, then that should be done.
+         * @arg to_add Array of Objects to be added to the array
+         * @arg index Location to add the objects to the array at
+         **/
+        void addAll(FloatArray* to_add, size_t index) {
+            float_arr->addAll(to_add->float_arr, index);
+        }
 
-    /**
-     * Returns the subarray starting from the provided index to the end of the array. 
-     * If the index is invalid, then the method returns NULL
-     * @arg index Starting place for the subarray
-     **/
-     FloatArray* subArray(size_t index);
+        /**
+         * Returns the subarray starting from the provided index to the end of the array. 
+         * If the index is invalid, then the method returns NULL
+         * @arg index Starting place for the subarray
+         **/
+        FloatArray* subArray(size_t index) {
+            FloatArray* returning = new FloatArray();
+            if (index > getSize()) {
+                return NULL;
+            }
+            while(index < getSize()) {
+                returning->add(get(index));
+                index += 1;
+            }
+            return returning;
+        }
 
-    /**
-     * Returns the subarray starting from the provided index to the ending index
-     * The starting index must always be greater than the ending index. If either index is invalid, 
-     * then NULL is returned. The set is [start, end)
-     * @arg startIndex starting place for the subarray
-     * @arg endIndex location of the last object to be put in the subarray
-     **/
-    FloatArray* subArray(size_t startIndex, size_t endIndex);
+        /**
+         * Returns the subarray starting from the provided index to the ending index
+         * The starting index must always be greater than the ending index. If either index is invalid, 
+         * then NULL is returned. The set is [start, end)
+         * @arg startIndex starting place for the subarray
+         * @arg endIndex location of the last object to be put in the subarray
+         **/
+        FloatArray* subArray(size_t startIndex, size_t endIndex) {
+            FloatArray* returning = new FloatArray();
+            if (endIndex > getSize() || startIndex > endIndex) {
+                return NULL;
+            }
+            while(endIndex < getSize()) {
+                returning->add(get(startIndex));
+                startIndex += 1;
+            }
+            return returning;
+        }
 
-    /**
-     * Removes the first instance of the given float in this array. If nothing 
-     * is found, then no action will occur. The size reduces by 1 if the 
-     * element is found.
-     * @arg to_remove float to be removed from the array
-     **/
-     void remove(float to_remove);
+        /**
+         * Removes the first instance of the given float in this array. If nothing 
+         * is found, then no action will occur. The size reduces by 1 if the 
+         * element is found.
+         * @arg to_remove float to be removed from the array
+         **/
+        void remove(float to_remove) {
+            FloatObj* float_obj = new FloatObj(to_remove);
+            float_arr->remove(float_obj);
+            delete float_obj;
+        }
 
-    /**
-     * Removes all instances of the given float in this array. If nothing 
-     * is found, then no action will occur. The size reduces the number of found
-     * elements there are.
-     * @arg to_remove int that all instances in the array will be removed of
-     **/
-     void removeAll(float to_remove);
+        /**
+         * Removes all instances of the given float in this array. If nothing 
+         * is found, then no action will occur. The size reduces the number of found
+         * elements there are.
+         * @arg to_remove int that all instances in the array will be removed of
+         **/
+        void removeAll(float to_remove) {
+            IntObj* float_obj = new IntObj(to_remove);
+            float_arr->removeAll(float_obj);
+            delete float_arr;
+        }
 
-    /**
-     * Returns number of elements in the array. 
-     **/
-    size_t getSize();
+        /**
+         * Returns number of elements in the array. 
+         **/
+        size_t getSize() {
+            return float_arr->getSize();
+        }
 
-    /**
-     * Overriding the Object equals method. 
-     * Returns if all the elements in this array and the given object are equal and 
-     * in the same other. 
-     * If the given object is NULL or not an array, then false will be returned.
-     * @arg other Object to check if this array is equal to
-     **/
-    bool equals(Object* other);
+        /**
+         * Overriding the Object equals method. 
+         * Returns if all the elements in this array and the given object are equal and 
+         * in the same other. 
+         * If the given object is NULL or not an array, then false will be returned.
+         * @arg other Object to check if this array is equal to
+         **/
+        bool equals(Object* other) {
+            FloatArray* o = dynamic_cast<FloatArray*> (other);
+            if (o)
+                return o->float_arr->equals(this->float_arr);
+            else {
+                return false;
+            }
+
+        }
 
     /**
      * Overriding the Object hash_me() method. 
      * Hashes the array based on user specifications. Default implementation is
      * to hash all internal elements and sum them up. 
      **/
-    size_t hash_me_();
+    size_t hash_me_() {
+        return float_arr->hash_me_() + 3;
+    }
 };
 
 
 class BoolArray : public Object {
     public:
-     /**
-     * Default constructor which will set the initial max-capacity to the array to 10. 
-     **/
-    BoolArray();
+        Array* bool_arr;
 
-    /**
-     * Initalized this array with the characteristics of the passed in array.
-     * @arg arr Array containing values to be used in initialization. 
-     **/
-    BoolArray(BoolArray* arr);
+        /**
+         * Default constructor which will set the initial max-capacity to the array to 10. 
+         **/
+        BoolArray() {
+            bool_arr = new Array();
+        }
 
-    /**
-     * Destructor which will free the memory of the underlying array as well. 
-     **/
-    ~BoolArray();
+        /**
+         * Initalized this array with the characteristics of the passed in array.
+         * @arg arr Array containing values to be used in initialization. 
+         **/
+        BoolArray(BoolArray* arr) {
+            bool_arr = arr->bool_arr;
+        }
 
-    /**
-     * Will return the bool at the provided index. if the index is invalid, 
-     * then the method will return -1
-     * @arg index Location to get the value in the array at. 
-     **/
-    bool get(size_t index);
+        /**
+         * Destructor which will free the memory of the underlying array as well. 
+         **/
+        ~BoolArray() {
+            delete bool_arr;
+        }
+
+        /**
+         * Will return the bool at the provided index. if the index is invalid, 
+         * then the method will return -1
+         * @arg index Location to get the value in the array at. 
+         **/
+        bool get(size_t index) {
+            Object* obj = bool_arr->get(index); 
+            if (obj) {
+                return static_cast <BoolObj*> (obj)->getBool();
+            }
+        }
 
 
-    /**
-     * Clears the array and reinitializes the underlying array to 10 spots with no elements. 
-     * Reinitializes the size to 0. 
-     **/
-    void clear();
+        /**
+         * Clears the array and reinitializes the underlying array to 10 spots with no elements. 
+         * Reinitializes the size to 0. 
+         **/
+        void clear() {
+            bool_arr->clear();
+        }
 
-    /**
-     * Resizing the underlying array. And then copying over the elements to a new array with
-     * the updated size. 
-     * Default is doubling the array size when the max capacity of the 
-     * underlying array less the number of elements is 2. 
-     **/
-    void resize();
+        /**
+         * Resizing the underlying array. And then copying over the elements to a new array with
+         * the updated size. 
+         * Default is doubling the array size when the max capacity of the 
+         * underlying array less the number of elements is 2. 
+         **/
+        void resize() {
+            bool_arr->resize();
+        }
 
-    /**
-     * Returns the first index of the of given bool. 
-     * If the object pointer is not found then -1 is returned.
-     * @arg to_find Object to find the index of. 
-     **/
-    int indexOf(bool to_find);
+        /**
+         * Returns the first index of the of given bool. 
+         * If the object pointer is not found then -1 is returned.
+         * @arg to_find Object to find the index of. 
+         **/
+        int indexOf(bool to_find) {
+            BoolObj* to_find_obj = new BoolObj(to_find);
+            int returning = bool_arr->indexOf(to_find_obj);
+            delete to_find_obj;
+            return returning;
+        }
 
     /**
      * Adds the element provided to the end of the list.
@@ -839,7 +1008,10 @@ class BoolArray : public Object {
      * then that should be done.
      * @arg to_add int to be added to the array. 
      **/
-    void add(bool to_add);
+    void add(bool to_add) {
+        BoolObj* bool_obj = new BoolObj(to_add);
+        bool_arr->add(bool_obj);
+    }
 
     /**
      * Adds the provided array to the end of the list, unless the given array is NULL, 
@@ -848,7 +1020,9 @@ class BoolArray : public Object {
      * added array. If resizing the array is necessary, then that should be done.
      * @arg to_add Array of Objects that all need to be added to this array. 
      **/
-    void addAll(BoolArray* to_add);
+    void addAll(BoolArray* to_add) {
+        bool_arr->addAll(to_add->bool_arr);
+    }
 
     /**
      * Adds the provided bool at the given index. All elements previously at the index and
@@ -859,7 +1033,10 @@ class BoolArray : public Object {
      * @arg to_add Object to be added to the array
      * @arg index Location to add the Object at
      **/
-    void add(bool to_add, size_t index);
+    void add(bool to_add, size_t index) {
+        BoolObj* bool_obj = new BoolObj(to_add);
+        bool_arr->add(bool_obj, index);
+    }
 
     /**
      * Adds all the elements of the provided array at the given index, 
@@ -872,14 +1049,26 @@ class BoolArray : public Object {
      * @arg to_add Array of Objects to be added to the array
      * @arg index Location to add the objects to the array at
      **/
-    void addAll(BoolArray* to_add, size_t index);
+    void addAll(BoolArray* to_add, size_t index) {
+        bool_arr->addAll(to_add->bool_arr, index);
+    }
 
     /**
      * Returns the subarray starting from the provided index to the end of the array. 
      * If the index is invalid, then the method returns NULL
      * @arg index Starting place for the subarray
      **/
-     BoolArray* subArray(size_t index);
+     BoolArray* subArray(size_t index) {
+        BoolArray* returning = new BoolArray();
+        if (index > getSize()) {
+            return NULL;
+        }
+        while(index < getSize()) {
+            returning->add(get(index));
+            index += 1;
+        }
+        return returning;
+     }
 
     /**
      * Returns the subarray starting from the provided index to the ending index
@@ -888,7 +1077,17 @@ class BoolArray : public Object {
      * @arg startIndex starting place for the subarray
      * @arg endIndex location of the last object to be put in the subarray
      **/
-    BoolArray* subArray(size_t startIndex, size_t endIndex);
+    BoolArray* subArray(size_t startIndex, size_t endIndex) {
+        BoolArray* returning = new BoolArray();
+        if (endIndex > getSize() || startIndex > endIndex) {
+            return NULL;
+        }
+        while(endIndex < getSize()) {
+            returning->add(get(startIndex));
+            startIndex += 1;
+        }
+        return returning;
+    }
 
     /**
      * Removes the first instance of the given bool in this array. If nothing 
@@ -896,7 +1095,11 @@ class BoolArray : public Object {
      * element is found.
      * @arg to_remove float to be removed from the array
      **/
-     void remove(bool to_remove);
+     void remove(bool to_remove) {
+        BoolObj* bool_obj = new BoolObj(to_remove);
+        bool_arr->remove(bool_obj);
+        delete bool_obj;
+     }
 
     /**
      * Removes all instances of the given bool in this array. If nothing 
@@ -904,12 +1107,18 @@ class BoolArray : public Object {
      * elements there are.
      * @arg to_remove int that all instances in the array will be removed of
      **/
-     void removeAll(bool to_remove);
+     void removeAll(bool to_remove) {
+        BoolObj* bool_obj = new BoolObj(to_remove);
+        bool_arr->removeAll(bool_obj);
+        delete bool_obj;
+     }
 
     /**
      * Returns number of elements in the array. 
      **/
-    size_t getSize();
+    size_t getSize() {
+        return bool_arr->getSize();
+    }
 
     /**
      * Overriding the Object equals method. 
@@ -918,12 +1127,22 @@ class BoolArray : public Object {
      * If the given object is NULL or not an array, then false will be returned.
      * @arg other Object to check if this array is equal to
      **/
-    bool equals(Object* other);
+    bool equals(Object* other) {
+        BoolArray* o = dynamic_cast<BoolArray*> (other);
+        if (o)
+            return o->bool_arr->equals(this->bool_arr);
+        else {
+            return false;
+        }
+
+    }
 
     /**
      * Overriding the Object hash_me() method. 
      * Hashes the array based on user specifications. Default implementation is
      * to hash all internal elements and sum them up. 
      **/
-    size_t hash_me_();
+    size_t hash_me_() {
+        return bool_arr->hash_me_() + 4;
+    }
 };

@@ -254,6 +254,95 @@ class TestArrayMethods {
         clear();
     }
 
+    void testBasicIntArray() {
+        initconditions();
+        iarr->add(1);
+        iarr->add(2);
+        cout->t_true(iarr->get(0) == 1);
+        iarr->add(0,0);
+        cout->t_true(iarr->get(0) == 0);
+        cout->t_true(iarr->getSize() == 3);
+        iarr2->add(3);
+        iarr2->add(4);
+        iarr->addAll(iarr2);
+        cout->t_true(iarr->getSize() == 5);
+        iarr3->add(0);
+        iarr3->add(1);
+        iarr3->add(2);
+        iarr3->add(3);
+        iarr3->add(4);
+        cout->t_true(iarr->equals(iarr3));
+        cout->t_true(iarr3->getSize() == 5);
+        iarr3->removeAll(0);
+        cout->t_true(iarr3->getSize() == 4);
+        cout->t_true(iarr3->get(0) == 1);
+        iarr3->remove(1);
+        cout->t_true(iarr3->getSize() == 3);
+        cout->t_true(iarr3->get(0) == 2);
+        iarr4 = iarr->subArray(2,4);
+        cout->t_true(iarr4->equals(iarr3));
+        cout->pln("Basic Int Array Functions work");
+        clear();
+    }
+
+    void testBasicFloatArray() {
+        initconditions();
+        farr->add(1.1);
+        farr->add(2.1);
+        cout->t_true(farr->get(0) == 1.1);
+        farr->add(0.1,0);
+        cout->t_true(farr->get(0) == 0.1);
+        cout->t_true(farr->getSize() == 3);
+        farr2->add(3.1);
+        farr2->add(4.1);
+        farr->addAll(farr2);
+        cout->t_true(farr->getSize() == 5);
+        farr3->add(0.1);
+        farr3->add(1.1);
+        farr3->add(2.1);
+        farr3->add(3.1);
+        farr3->add(4.1);
+        cout->t_true(farr->equals(farr3));
+        cout->t_true(farr3->getSize() == 5);
+        farr3->removeAll(0.1);
+        cout->t_true(farr3->getSize() == 4);
+        cout->t_true(farr3->get(0) == 1.1);
+        farr3->remove(1.1);
+        cout->t_true(farr3->getSize() == 3);
+        cout->t_true(farr3->get(0) == 2.1);
+        farr4 = farr->subArray(2,4);
+        cout->t_true(farr4->equals(farr3));
+        cout->pln("Basic Float Array Functions work");
+        clear();
+    }
+    void testBasicBoolArray() {
+        initconditions();
+        barr->add(true);
+        barr->add(false);
+        cout->t_true(barr->get(0) == true);
+        barr->add(false,0);
+        cout->t_true(barr->get(0) == false);
+        cout->t_true(barr->getSize() == 3);
+        barr2->add(true);
+        barr2->add(false);
+        barr->addAll(barr2);
+        cout->t_true(barr->getSize() == 5);
+        barr3->add(false);
+        barr3->add(true);
+        barr3->add(false);
+        barr3->add(true);
+        barr3->add(false);
+        cout->t_true(barr->equals(barr3));
+        cout->t_true(barr3->getSize() == 5);
+        barr3->removeAll(false);
+        cout->t_true(barr3->getSize() == 2);
+        cout->t_true(barr3->get(0) == true);
+        barr3->remove(true);
+        cout->t_true(barr3->getSize() == 0);
+        cout->pln("Basic Float Array Functions work");
+        clear();
+    }
+
 };
 
 
@@ -266,5 +355,8 @@ int main() {
     t->testRemoveAndRemoveAll();
     t->testSubArray();
     t->testBasicStringArray();
+    t->testBasicIntArray();
+    t->testBasicFloatArray();
+    t->testBasicBoolArray();
     delete t;
 }
