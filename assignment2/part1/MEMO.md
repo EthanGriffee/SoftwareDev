@@ -28,8 +28,16 @@ Implementation :
 
 
 Specifications : 
-    Very detailed specifications, was really helpful. Tests were really good, and when we found
-    errors, they were fixed immediately. 
+
+    Documentation quality: The specification for queue by our Spec pair was well written. It was
+    easy to follow along their interface and the comments were helpful in figuring out the code. 
+
+    Responsiveness: The Spec pair for Queue were easy to work with. They were quick to respond when
+    we reported small issues which was helpful and time saving!
+
+    Test Quality: The test file provided by our Spec pair contained a small amount issues that were
+    causing memory leaks. However, once we bought this to their attention, they quickly resolved the
+    issue!
 
 
 
@@ -37,10 +45,27 @@ Specifications :
 Array : https://github.com/LalBirali/A1P2
 
 Implementation :
+    We used a Object** to represesnt the contents of an array, and a size_t to keep track fo the
+    length. We also had a second size_t called max_length to keep track of the maximum length
+    allocated for Object**. When the size of the array approched the max_length Object**'s contents
+    were coppied into a new Array with a larger maximum length.
 
 
 
-Specifications :
+
+
+Specifications:
+    Documentation quality: The specification for array by our Spec pair was fine for most of the
+    part, however, their implementation of IntArray, FloatArray and BolArray classes seem wrong as
+    we cannot write a get function that returns int, float or Boolean because the Array's get
+    returns an object and IntArray, FloatArray and BolArray are subclasses of Array.
+
+    Responsiveness: The Spec pair for Array’s were easy to work with. They were quick to reply when
+    we reported an issue. However, they didn’t solve the we pertained with the get function in the
+    IntArray, FloatArray and BolArray classes having the wrong return type.
+
+    Test Quality: The test file provided by our Spec pair didn’t include test for the different
+    types of datatypes such as int, float or Boolean. They added it as per our request. 
 
 
 Map : https://github.com/grahamwren/cs4500-assignment_1-part2
@@ -97,6 +122,18 @@ Implementation :
 Specifications :
 
     The documentation quality was very good. They provided all the information needed to implement
-    their specification without any clarification. We did not have to communicate with this team at 
-    all, because other teams had ironed out all the problems. They test quality was pretty good, 
-    they tested all methods thoroughly. 
+    their specification without any clarification. We did not have to communicate with this team
+    much, because other teams had ironed out all the problems. They test quality was pretty good, 
+    they tested all methods thoroughly. However, they did not add deletes to the objects they
+    created, making it hard to know if our implementation was leaking memory.
+
+
+    Documentation quality: The specification for map by our Spec pair was well written. It was easy
+    to follow along their interface and the comments were helpful in figuring out the code. 
+
+    Responsiveness: We did not have any issues with their code; hence, we cannot comment on this
+    topic.
+
+    Test Quality: The test file provided by our Spec pair were good, however, they did not add
+    deletes to the objects they created, making it hard to know if our implementation was leaking
+    memory.

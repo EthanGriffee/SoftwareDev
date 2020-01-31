@@ -5,6 +5,7 @@
 #include "string.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 void test_get() {
   Map *theMap = new Map();
@@ -268,15 +269,26 @@ void test_keys_extensional() {
 
 int main(int argc, char **argv) {
   test_get();
+  printf("OK: GET\n");
   test_remove();
+  printf("OK: REMOVE\n");
   test_has();
+  printf("OK: HAS\n");
   test_has_set_null();
+  printf("OK: SETNULL\n");
   test_clear();
+  printf("OK: CLEAR\n");
   test_size();
+  printf("OK: SIZE\n");
   test_keys();
+  printf("OK: KEYS\n");
   test_keys_size();
+  printf("OK: KEYSSIZE\n");
   test_overwrite();
+  printf("OK: OVERWRITE\n");
   test_equals_and_hash();
+  printf("OK: EQHASH\n");
   test_keys_extensional();
+  printf("OK: EXT\n");
   return 0;
 }

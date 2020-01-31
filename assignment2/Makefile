@@ -1,9 +1,9 @@
-ARRAYSPECREPO = https://github.com/example/array-api.git
-ARRAYSPECHASH = 53f19236cd14f1f691781558c4db45794bc635bf
-QUEUESPECREPO = https://github.com/example/queue-api.git
-QUEUESPECHASH = f94340be53a497b8018464046c5de68a0b4a307d
-MAPSPECREPO = https://github.com/dxandbatista/map-api.git
-MAPSPECHASH = 39dc2e804ac4646c886db383a8277c36283670df
+ARRAYSPECREPO = https://github.com/LalBirali/A1P2.git
+ARRAYSPECHASH = 314c63d90b7dee7771dd7454cfcc20cd29c168f7
+QUEUESPECREPO = https://github.com/Buntry/swdev20_a1p2.git
+QUEUESPECHASH = 27156ca228b50f603d6e4078ec1fe9edc944e465
+MAPSPECREPO = https://github.com/grahamwren/cs4500-assignment_1-part2.git
+MAPSPECHASH = 091545f3c0413cdefa996658d92be327bffac2cc
 
 run: dircheck
 	- make first

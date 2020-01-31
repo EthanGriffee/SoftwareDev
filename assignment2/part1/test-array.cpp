@@ -22,6 +22,18 @@ class TestArrayMethods {
     StringArray* starr2;
     StringArray* starr3;
     StringArray* starr4;
+    IntArray* iarr;
+    IntArray* iarr2;
+    IntArray* iarr3;
+    IntArray* iarr4;
+    FloatArray* farr; 
+    FloatArray* farr2; 
+    FloatArray* farr3; 
+    FloatArray* farr4; 
+    BoolArray* barr;
+    BoolArray* barr2;
+    BoolArray* barr3;
+    BoolArray* barr4;
 
     Cout* cout;
 
@@ -42,7 +54,18 @@ class TestArrayMethods {
         starr = new StringArray();
         starr2 = new StringArray();
         starr3 = new StringArray();
-        starr4 = new StringArray();
+        iarr = new IntArray();
+        farr = new FloatArray();
+        barr = new BoolArray();
+        iarr2 = new IntArray();
+        farr2 = new FloatArray();
+        barr2 = new BoolArray();
+        iarr3 = new IntArray();
+        farr3 = new FloatArray();
+        barr3 = new BoolArray();
+        iarr4 = new IntArray();
+        farr4 = new FloatArray();
+        barr4 = new BoolArray();
 
     }
 
@@ -64,6 +87,18 @@ class TestArrayMethods {
         delete starr2;
         delete starr3;
         delete starr4;
+        delete iarr;
+        delete farr;
+        delete barr;
+        delete iarr2;
+        delete farr2;
+        delete barr2;
+        delete iarr3;
+        delete farr3;
+        delete barr3;
+        delete iarr4;
+        delete farr4;
+        delete barr4;
     }
 
 
@@ -177,8 +212,8 @@ class TestArrayMethods {
         cout->pln("2 index subarray works");
 
         delete sub1;
-        delete sub3;
         delete sub2;
+        delete sub3;
         clear();
 
     }
@@ -212,7 +247,6 @@ class TestArrayMethods {
         cout->t_true(starr3->getSize() == 1);
         s = (String*) starr3->get(0);
         cout->t_true(s->equals(s2));
-        delete starr4;
         starr4 = (StringArray*) starr->subArray(3,5);
         cout->t_true(starr4->equals(starr2));
         cout->pln("Basic String Array Functions work");
@@ -233,5 +267,4 @@ int main() {
     t->testSubArray();
     t->testBasicStringArray();
     delete t;
-    
 }

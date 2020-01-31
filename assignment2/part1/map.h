@@ -4,7 +4,7 @@
 
 #include "object.h"
 #include "string.h"
-#include "Array.h"
+#include "array.h"
 
 
 class Map_Node : public Object {
@@ -61,6 +61,7 @@ class Map : public Object
         }
 
         virtual ~Map(){
+            delete_map_nodes_();
             for (size_t x = 0; x < MAX_HASH_LENGTH; x++) {
                 delete hashmap[x];
             }
@@ -127,9 +128,22 @@ class Map : public Object
         }
 
         /**
+         * private method used to delete map nodes
+         */
+        void delete_map_nodes_() {
+            Object** arr_keys = new Object*[size()];
+            keys(arr_keys);
+            for (int i = 0; i < size(); i++) {
+                Array* arr = findArray_(arr_keys[i]);
+                delete arr->get(arr->indexOf(arr_keys[i]));
+            }
+        }
+
+        /**
          * Remove all keys from this map.
          */
         virtual void clear() {
+            delete_map_nodes_();
             for (int i = 0; i < MAX_HASH_LENGTH ; i++) {
                 hashmap[i]->clear();
             }
