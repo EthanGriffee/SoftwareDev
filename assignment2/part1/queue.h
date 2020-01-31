@@ -2,15 +2,33 @@
 #include "object.h"
 #include "string.h"
 
+class Node {
+    public:
+      Node* next;
+      Object* obj;
+
+      Node(Object* obj) {
+        this->obj = obj;
+        this->next = nullptr;
+      }
+
+      Object* getObj() {
+        return obj;
+      }
+
+      Node* getNext() {
+        return next;
+      }
+
+      void setNext(Node* next) {
+        this->next = next;
+      }
+};
+
 /**
  * @brief Represents a FIFO queue for containing objects.
  * 
  */
-struct Node {
-  Node* next;
-  Object* obj;
-};
-
 class Queue : public Object {
   public:
     Node* first;
@@ -21,9 +39,7 @@ class Queue : public Object {
      * 
      */
     Queue() {
-      first = new Node;
-      first->next = nullptr;
-      first->obj = nullptr;
+      first = nullptr;
       len = 0;
     }
 
@@ -33,7 +49,6 @@ class Queue : public Object {
      */
     ~Queue() {
       _delete_objects();
-      delete first;
     }
     
     /**
@@ -41,13 +56,11 @@ class Queue : public Object {
      * delete all objects
      */
     void _delete_objects() {
-      while (first->next) {
-        Node* old = first;
-        first = first->next;
+      Node* deleting = first;
+      while (deleting) {
+        Node* old = deleting;
+        deleting = deleting->getNext();
         delete old;
-      }
-      if (first->obj) {
-        delete first->obj;
       }
     }
 
@@ -58,18 +71,16 @@ class Queue : public Object {
      */
     void enqueue(Object *other) {
       len += 1;
-      Node* node = first;
-      if(first->obj) {
-        while (node->next) {
-          node = node->next;
+      if(first) {
+        Node* node = first;
+        while (node->getNext()) {
+          node = node->getNext();
         }
-        Node* new_node = new Node;
-        new_node->next = nullptr;
-        new_node->obj = other;
-        node->next = new_node;
+        Node* new_node = new Node(other);
+        node->setNext(new_node);
       }
       else {
-        first->obj = other;
+        first = new Node(other);
       }
 
     }
@@ -81,17 +92,13 @@ class Queue : public Object {
      * @return Object* 
      */
     Object* dequeue() {
-      if(first->obj) {
-        Object* returning = first->obj;
+      if(first) {
+        Object* returning = first->getObj();
         len -= 1;
-        if(first->next) {
-          first = first->next;
-          return returning;
-        }
-        else {
-          first->obj = nullptr;
-          return returning;
-        }
+        Node* old_node = first;
+        first = first->getNext();
+        delete old_node;
+        return returning;
       }
       else {
         return nullptr;
@@ -106,7 +113,12 @@ class Queue : public Object {
      * @return Object* 
      */
     Object* peek() {
-      return first->obj;
+      if (first) {
+        return first->getObj();
+      }
+      else {
+        return nullptr;
+      }
     }
 
     /**
@@ -133,8 +145,7 @@ class Queue : public Object {
     void clear() {
       _delete_objects();
       len = 0;
-      first->next = nullptr;
-      first->obj = nullptr;
+      first = nullptr;
     }
 
     /**
@@ -145,12 +156,9 @@ class Queue : public Object {
     virtual unsigned long hash() {
       unsigned long counter = 0;
       Node* n = first;
-      while (n->next) {
-        counter += n->obj->hash();
+      while (n) {
+        counter += n->getObj()->hash();
         n = n->next;
-      }
-      if (n->obj) {
-        counter += n->obj->hash();
       }
       return counter;
     }
@@ -164,20 +172,17 @@ class Queue : public Object {
      */
     virtual bool equals(Object* o) {
       Queue * queue = dynamic_cast<Queue*>(o);
-      if (queue == nullptr || queue->size() != queue->len) {
+      if (!queue || queue->size() != this->len) {
           return false;
       }
       Node* n = first;
       Node* n2 = queue->first;
-      while (n->next) {
-        if (!n->obj->equals(n2->obj)) {
+      while (n) {
+        if (!n->getObj()->equals(n2->getObj())) {
           return false;
         }
-        n = n->next;
-        n2 = n2->next;
-      }
-      if (n->obj) {
-         return n->obj->equals(n2->obj);
+        n = n->getNext();
+        n2 = n2->getNext();
       }
       return true;
     }
@@ -189,12 +194,13 @@ class Queue : public Object {
  */
 class StrQueue : public Object {
   public:
+    Queue* queue;
     /**
      * @brief Constructs a new empty StrQueue object.
      * 
      */
     StrQueue() {
-
+      queue = new Queue();
     }
 
     /**
@@ -202,7 +208,7 @@ class StrQueue : public Object {
      * This will delete all strings currently in the queue.
      */
     ~StrQueue() {
-
+      delete queue;
     }
 
     /**
@@ -211,7 +217,7 @@ class StrQueue : public Object {
      * @param other 
      */
     void enqueue(String *other) {
-
+      queue->enqueue(other);
     }
 
     /**
@@ -221,6 +227,7 @@ class StrQueue : public Object {
      * @return String* 
      */
     String* dequeue() {
+      return static_cast <String*> (queue->dequeue());
 
     }
 
@@ -231,7 +238,7 @@ class StrQueue : public Object {
      * @return String* 
      */
     String* peek() {
-
+      return static_cast <String*> (queue->peek());
     }
 
     /**
@@ -240,7 +247,7 @@ class StrQueue : public Object {
      * @return unsigned long 
      */
     unsigned long size() {
-
+      return queue->size();
     }
 
     /**
@@ -249,14 +256,14 @@ class StrQueue : public Object {
      * @return bool 
      */
     bool is_empty() {
-
+      return queue->is_empty();
     }
 
     /**
      * @brief Removes all elements from the queue, deleting them.
      */
     void clear() {
-
+      queue->clear();
     }
 
     /**
@@ -265,7 +272,7 @@ class StrQueue : public Object {
      * @return unsigned long 
      */
     virtual unsigned long hash() {
-
+      return queue->hash();
     }
 
     /**
@@ -276,6 +283,12 @@ class StrQueue : public Object {
      * @return bool
      */
     virtual bool equals(Object* o) {
-      
+      StrQueue * input = dynamic_cast<StrQueue*>(o);
+      if (!input) {
+          return false;
+      }
+      else {
+        return queue->equals(input->queue);
+      }
     }
 };
