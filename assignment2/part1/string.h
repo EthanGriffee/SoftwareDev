@@ -58,7 +58,7 @@ class String : public Object {
         // same as the characters in other->str_
         bool equals(Object *other){
             String* t = dynamic_cast<String*>(other);
-            if (size_ == t->size_) {
+            if (t && size_ == t->size_) {
                 for (int x = 0; x < size_; x++) {
                     if (str_[x] != t->str_[x]) {
                         return false;

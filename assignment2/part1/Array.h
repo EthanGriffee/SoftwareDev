@@ -453,7 +453,7 @@ class StringArray : public Array {
 };
 
 
-class IntArray : public Array {
+class IntArray  {
     public:
      /**
      * Default constructor which will set the initial max-capacity to the array to 10. 
@@ -597,7 +597,7 @@ class IntArray : public Array {
 
 
 
-class FloatArray : public Array {
+class FloatArray  {
     public:
      /**
      * Default constructor which will set the initial max-capacity to the array to 10. 
@@ -740,7 +740,7 @@ class FloatArray : public Array {
 };
 
 
-class BoolArray : public Array {
+class BoolArray {
     public:
      /**
      * Default constructor which will set the initial max-capacity to the array to 10. 

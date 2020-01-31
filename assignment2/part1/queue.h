@@ -163,10 +163,10 @@ class Queue : public Object {
      * @return bool
      */
     virtual bool equals(Object* o) {
-        Queue * queue = dynamic_cast<Queue*>(o);
-        if (queue == nullptr || queue->size() != queue->len) {
-            return false;
-        }
+      Queue * queue = dynamic_cast<Queue*>(o);
+      if (queue == nullptr || queue->size() != queue->len) {
+          return false;
+      }
       Node* n = first;
       Node* n2 = queue->first;
       while (n->next) {

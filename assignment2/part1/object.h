@@ -10,12 +10,12 @@ class Object {
         }
 
         // returns true if it refers to the same memory address
-        bool equals(Object *other){
+        virtual bool equals(Object *other){
             return this == other;
         }
 
         // returns a hash of the object
-        size_t hash() {
+        virtual size_t hash() {
             return reinterpret_cast<size_t>(this);
         }
 
