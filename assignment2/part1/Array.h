@@ -309,48 +309,28 @@ class StringArray : public Array {
      /**
      * Default constructor which will set the initial max-capacity to the array to 10. 
      **/
-    StringArray();
+    StringArray() : Array(){}
 
     /**
      * Initalized this array with the characteristics of the passed in array.
      * @arg arr Array containing values to be used in initialization. 
      **/
-    StringArray(StringArray* arr);
+    StringArray(StringArray* arr) : Array(arr){}
 
     /**
      * Destructor which will free the memory of the underlying array as well. 
      **/
-    ~StringArray();
+    ~StringArray() {}
 
     /**
      * Will return the String pointer at the provided index. if the index is invalid, 
      * then the method will return NULL.
      * @arg index Location to get the value in the array at. 
      **/
-     String* get(size_t index);
+     String* get(size_t index) {
+         return static_cast<String*> (this->Array::get(index));
+     }
 
-
-    /**
-     * Clears the array and reinitializes the underlying array to 10 spots with no elements. 
-     * Reinitializes the size to 0. 
-     **/
-    void clear();
-
-    /**
-     * Resizing the underlying array. And then copying over the elements to a new array with
-     * the updated size. 
-     * Default is doubling the array size when the max capacity of the 
-     * underlying array less the number of elements is 2. 
-     **/
-     void resize();
-
-    /**
-     * Returns the first index of the of given String pointer. 
-     * If the pointer is not a String, return -1. 
-     * If the string pointer is not found then -1 is returned.
-     * @arg to_find String to find the index of. 
-     **/
-    int indexOf(Object* to_find);
 
     /**
      * Adds the element provided to the end of the list, unless the given element is NULL, 
@@ -358,7 +338,12 @@ class StringArray : public Array {
      * then that should be done.
      * @arg to_add Object to be added to the array. 
      **/
-    void add(Object* to_add);
+    void add(Object* to_add) {
+        String* st = static_cast<String*> (to_add);
+        if (st) {
+            this->Array::add(st);
+        }
+    }
 
     /**
      * Adds the provided array to the end of the list, unless the given array is NULL, 
@@ -367,7 +352,9 @@ class StringArray : public Array {
      * added array. If resizing the array is necessary, then that should be done.
      * @arg to_add Array of String that all need to be added to this array. 
      **/
-     void addAll(StringArray* to_add);
+     void addAll(StringArray* to_add) {
+         this->Array::addAll(to_add);
+     }
 
     /**
      * Adds the provided String at the given index, unless the given object is NULL, 
@@ -380,7 +367,12 @@ class StringArray : public Array {
      * @arg to_add Object to be added to the array
      * @arg index Location to add the Object at
      **/
-     void add(Object* to_add, size_t index);
+     void add(Object* to_add, size_t index) {
+        String* st = static_cast<String*> (to_add);
+        if (st) {
+            this->Array::add(to_add, index);
+        }
+     }
 
     /**
      * Adds all the elements of the provided array at the given index, 
@@ -393,14 +385,18 @@ class StringArray : public Array {
      * @arg to_add Array of Objects to be added to the array
      * @arg index Location to add the objects to the array at
      **/
-     void addAll(StringArray* to_add, size_t index);
+     void addAll(StringArray* to_add, size_t index) {
+         this->Array::addAll(to_add, index);
+     }
 
     /**
      * Returns the subarray starting from the provided index to the end of the array. 
      * If the index is invalid, then the method returns NULL
      * @arg index Starting place for the subarray
      **/
-     StringArray* subArray(size_t index);
+     StringArray* subArray(size_t index) {
+         return static_cast<StringArray*> (this->Array::subArray(index));
+     }
 
     /**
      * Returns the subarray starting from the provided index to the ending index
@@ -409,30 +405,9 @@ class StringArray : public Array {
      * @arg startIndex starting place for the subarray
      * @arg endIndex location of the last object to be put in the subarray
      **/
-     StringArray* subArray(size_t startIndex, size_t endIndex);
-
-    /**
-     * Removes the first instance of the given Object in this array. If nothing 
-     * is found, then no action will occur. The size reduces by 1 if the 
-     * element is found.
-     * If the object to be removed is not a string, do nothing. 
-     * @arg to_remove String to be removed from the array
-     **/
-     void remove(Object* to_remove);
-
-    /**
-     * Removes all instances of the given Object in this array. If nothing 
-     * is found, then no action will occur. The size reduces the number of found
-     * elements there are.
-     * If the object to remove is not a string, do nothing. 
-     * @arg to_remove String that all instances in the array will be removed of
-     **/
-     void removeAll(Object* to_remove);
-
-    /**
-     * Returns number of elements in the array. 
-     **/
-     size_t getSize();
+     StringArray* subArray(size_t startIndex, size_t endIndex) {
+         return static_cast<StringArray*> (this->Array::subArray(startIndex, endIndex));
+     }
 
     /**
      * Overriding the String equals method. 
@@ -441,30 +416,26 @@ class StringArray : public Array {
      * If the given object is NULL or not an array, then false will be returned.
      * @arg other Object to check if this array is equal to
      **/
-    bool equals(Object* other);
-
-    /**
-     * Overriding the Object hash_me() method. 
-     * Hashes the array based on user specifications. Default implementation is
-     * to hash all internal elements and sum them up. 
-     **/
-    size_t hash_me_();
-
+    bool equals(Object* other) {
+        StringArray* strarray = dynamic_cast<StringArray*> (other);
+        if (strarray) {
+            this->Array::equals(strarray);
+        }
+    }
 };
 
-
-class IntArray  {
+class IntArray : public Array {
     public:
      /**
      * Default constructor which will set the initial max-capacity to the array to 10. 
      **/
-    IntArray();
+    IntArray() : Array () {}
 
     /**
      * Initalized this array with the characteristics of the passed in array.
      * @arg arr Array containing values to be used in initialization. 
      **/
-    IntArray(IntArray* arr);
+    IntArray(IntArray* arr) : IntArray() {}
 
     /**
      * Destructor which will free the memory of the underlying array as well. 
@@ -476,7 +447,7 @@ class IntArray  {
      * then the method will return NULL.
      * @arg index Location to get the value in the array at. 
      **/
-    int get(size_t index);
+    //int get(size_t index);
 
 
     /**
@@ -597,7 +568,7 @@ class IntArray  {
 
 
 
-class FloatArray  {
+class FloatArray : public Array {
     public:
      /**
      * Default constructor which will set the initial max-capacity to the array to 10. 
@@ -620,7 +591,7 @@ class FloatArray  {
      * then the method will return -1
      * @arg index Location to get the value in the array at. 
      **/
-    float get(size_t index);
+    //float get(size_t index);
 
 
     /**
@@ -740,7 +711,7 @@ class FloatArray  {
 };
 
 
-class BoolArray {
+class BoolArray : public Array {
     public:
      /**
      * Default constructor which will set the initial max-capacity to the array to 10. 
@@ -763,7 +734,7 @@ class BoolArray {
      * then the method will return -1
      * @arg index Location to get the value in the array at. 
      **/
-    bool get(size_t index);
+    //bool get(size_t index);
 
 
     /**

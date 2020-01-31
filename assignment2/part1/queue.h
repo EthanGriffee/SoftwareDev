@@ -48,14 +48,14 @@ class Queue : public Object {
      * This will delete all objects currently in the queue.
      */
     ~Queue() {
-      _delete_objects();
+      _delete_nodes();
     }
     
     /**
      * @brief private helper function called by deleter and clear to 
      * delete all objects
      */
-    void _delete_objects() {
+    void _delete_nodes() {
       Node* deleting = first;
       while (deleting) {
         Node* old = deleting;
@@ -143,7 +143,7 @@ class Queue : public Object {
      * @brief Removes all elements from the queue, deleting them.
      */
     void clear() {
-      _delete_objects();
+      _delete_nodes();
       len = 0;
       first = nullptr;
     }
