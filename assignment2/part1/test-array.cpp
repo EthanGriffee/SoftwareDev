@@ -47,7 +47,23 @@ class TestArrayMethods {
     }
 
     void clear() {
-        delete a, b, c, d, arr, arr2, arr3, cout;
+        delete a;
+        delete b;
+        delete c;
+        delete d;
+        delete arr;
+        delete arr2;
+        delete arr3;
+        delete arr4;
+        delete cout;
+        delete s1;
+        delete s2;
+        delete s3;
+        delete s4;
+        delete starr;
+        delete starr2;
+        delete starr3;
+        delete starr4;
     }
 
 
@@ -160,7 +176,9 @@ class TestArrayMethods {
         cout->t_true(sub3->equals(arr4));
         cout->pln("2 index subarray works");
 
-        delete sub1, sub3, sub2;
+        delete sub1;
+        delete sub3;
+        delete sub2;
         clear();
 
     }
@@ -194,6 +212,7 @@ class TestArrayMethods {
         cout->t_true(starr3->getSize() == 1);
         s = (String*) starr3->get(0);
         cout->t_true(s->equals(s2));
+        delete starr4;
         starr4 = (StringArray*) starr->subArray(3,5);
         cout->t_true(starr4->equals(starr2));
         cout->pln("Basic String Array Functions work");
@@ -213,5 +232,6 @@ int main() {
     t->testRemoveAndRemoveAll();
     t->testSubArray();
     t->testBasicStringArray();
+    delete t;
     
 }

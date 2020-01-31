@@ -18,10 +18,18 @@ Implementation :
     traverses the nodes using getNext(), and deletes every node. This function is used both in 
     ~Queue() and in clear().
 
+    Different methods traverse the Nodes using the get function to look at all items in the queue.
+
+    String queue was decided to be an Object, and contain a queue, so return functions can be String
+    instead of Object*, and to better enforce adding to a queue.
+
+
+
 
 
 Specifications : 
-    Very specific specifications.
+    Very detailed specifications, was really helpful. Tests were really good, and when we found
+    errors, they were fixed immediately. 
 
 
 
@@ -29,6 +37,8 @@ Specifications :
 Array : https://github.com/LalBirali/A1P2
 
 Implementation :
+
+
 
 Specifications :
 
@@ -63,7 +73,30 @@ Implementation :
     returned.
 
     The remove method uses findArray_ on the key. It then searches the returned array for the key
-    using indexOf(). If indexOf returns -1, then nothing happens. 
-    
+    using indexOf(). If indexOf returns -1, then nothing happens. Else, it calls the remove() method
+    on the array, and decreases num_elements by one. 
+
+    The has method uses findArray_ on the key. It returns whether the indexOf(key) is equal to -1.
+
+    The clear method calls the Array's clear function for every array in hashmap, and sets 
+    num_elements to 0.
+
+    The size method returns num_elements. 
+
+    The keys method goes through every array in hashmap, and adds every Map_Node's key found in each
+    array to Object** dest.
+
+    The equals method calls other's equals on this when Object is entered. When a Map is entered the
+    equals method makes sure this map, and the other maps have the same size. Then it uses the keys()
+    function on other to iterate through every key pair in this and other. It calls if this map's
+    get of the key equals the other map's get of the key. If all keys have the same value pair it 
+    returns true. 
+
+    Hash iterates through the arrays in hashmap, and adds their hashes together.
 
 Specifications :
+
+    The documentation quality was very good. They provided all the information needed to implement
+    their specification without any clarification. We did not have to communicate with this team at 
+    all, because other teams had ironed out all the problems. They test quality was pretty good, 
+    they tested all methods thoroughly. 

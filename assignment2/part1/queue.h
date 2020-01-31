@@ -53,7 +53,6 @@ class Queue : public Object {
      */
     ~Queue() {
       _delete_nodes();
-      delete len;
     }
     
     /**
