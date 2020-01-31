@@ -60,7 +60,7 @@ public:
      **/
     virtual Object* get(size_t index) {
         if (index > size) {
-            return NULL;
+            return nullptr;
         }
         return array[index];
     }

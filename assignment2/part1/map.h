@@ -17,6 +17,10 @@ class Map_Node : public Object {
             this->value = value;
         }
 
+        ~Map_Node() {
+            
+        }
+
         void changeValue(Object* new_val) {
             this->value = new_val;
         }
@@ -64,11 +68,19 @@ class Map : public Object
         };
 
         /**
+         * private method that returns the array that 
+         * would contain key.
+         */
+        Array* findArray_(Object* key){
+            return hashmap[key->hash() % MAX_HASH_LENGTH];
+        }
+
+        /**
          * Returns the value which was set for this key.
          * Returns nullptr if not in map.
          */
         virtual Object *get(Object *key) {
-            Array* arr = hashmap[key->hash() % MAX_HASH_LENGTH];
+            Array* arr = findArray_(key);
             int x = arr->indexOf(key);
             if (x == -1) {
                 return nullptr;
@@ -82,7 +94,7 @@ class Map : public Object
          * Set the value at the given key in this map.
          */
         virtual void set(Object *key, Object *value) {
-            Array* arr = hashmap[key->hash() % MAX_HASH_LENGTH];
+            Array* arr = findArray_(key);
             int x = arr->indexOf(key);
             if (x == -1) { 
                 num_elements += 1;
@@ -99,7 +111,7 @@ class Map : public Object
          * Remove the value at the given key in this map. No-op if value not in map.
          */
         virtual void remove(Object *key) {
-            Array* arr = hashmap[key->hash() % MAX_HASH_LENGTH];
+            Array* arr = findArray_(key);
             if (arr->indexOf(key) != -1) {
                 arr->remove(key);
                 num_elements -= 1;
@@ -110,7 +122,7 @@ class Map : public Object
          * Determine if the given key is in this map.
          */
         virtual bool has(Object *key) {
-            Array* arr = hashmap[key->hash() % MAX_HASH_LENGTH];
+            Array* arr = findArray_(key);
             return arr->indexOf(key) != -1;
         }
 

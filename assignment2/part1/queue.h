@@ -12,6 +12,10 @@ class Node {
         this->next = nullptr;
       }
 
+      ~Node() {
+
+      }
+
       Object* getObj() {
         return obj;
       }
@@ -49,6 +53,7 @@ class Queue : public Object {
      */
     ~Queue() {
       _delete_nodes();
+      delete len;
     }
     
     /**
