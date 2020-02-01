@@ -79,26 +79,6 @@ class TestArrayMethods {
         delete arr3;
         delete arr4;
         delete cout;
-        delete s1;
-        delete s2;
-        delete s3;
-        delete s4;
-        delete starr;
-        delete starr2;
-        delete starr3;
-        delete starr4;
-        delete iarr;
-        delete farr;
-        delete barr;
-        delete iarr2;
-        delete farr2;
-        delete barr2;
-        delete iarr3;
-        delete farr3;
-        delete barr3;
-        delete iarr4;
-        delete farr4;
-        delete barr4;
     }
 
 
@@ -253,7 +233,7 @@ class TestArrayMethods {
         delete s;
         clear();
     }
-
+    
     void testBasicIntArray() {
         initconditions();
         iarr->add(1);

@@ -1,5 +1,5 @@
 ARRAYSPECREPO = https://github.com/LalBirali/A1P2.git
-ARRAYSPECHASH = 314c63d90b7dee7771dd7454cfcc20cd29c168f7
+ARRAYSPECHASH = 9ac5e42045a73a8e80902acb35199bfed69537c7
 QUEUESPECREPO = https://github.com/Buntry/swdev20_a1p2.git
 QUEUESPECHASH = 27156ca228b50f603d6e4078ec1fe9edc944e465
 MAPSPECREPO = https://github.com/grahamwren/cs4500-assignment_1-part2.git

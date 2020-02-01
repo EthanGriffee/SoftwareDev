@@ -62,7 +62,9 @@ Specifications:
 
     Responsiveness: The Spec pair for Array’s were easy to work with. They were quick to reply when
     we reported an issue. However, they didn’t solve the we pertained with the get function in the
-    IntArray, FloatArray and BolArray classes having the wrong return type.
+    IntArray, FloatArray and BolArray classes having the wrong return type quick enough and added
+    tests last minute. Thus, when issues were found with these tests they were not able to correct
+    them.
 
     Test Quality: The test file provided by our Spec pair didn’t include test for the different
     types of datatypes such as int, float or Boolean. They added it as per our request. 

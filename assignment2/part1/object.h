@@ -38,7 +38,7 @@ class FloatObj : public Object {
 
         // returns if other is a float that has the same f
         bool equals(Object *other) {
-            float epsilon = .0001;
+            float epsilon = .01;
             FloatObj * f2 = dynamic_cast<FloatObj*> (other);
             if (f2 && (f2->getFloat() - f < epsilon)  && (f2->getFloat() - f > -epsilon)){
                 return true;

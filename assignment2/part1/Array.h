@@ -431,6 +431,7 @@ class StringArray : public Object {
             returning->add(get(index));
             index += 1;
         }
+        return returning;
      }
 
     /**
@@ -445,10 +446,11 @@ class StringArray : public Object {
         if (endIndex > getSize() || startIndex > endIndex) {
             return NULL;
         }
-        while(endIndex < getSize()) {
+        while(startIndex < endIndex) {
             returning->add(get(startIndex));
             startIndex += 1;
         }
+        return returning;
      }
 
     /**
@@ -539,6 +541,7 @@ class IntArray : public Object {
         if (obj) {
             return static_cast <IntObj*> (obj)->getInt();
         }
+        return NULL;
     }
 
 
@@ -653,7 +656,7 @@ class IntArray : public Object {
         if (endIndex > getSize() || startIndex > endIndex) {
             return NULL;
         }
-        while(endIndex < getSize()) {
+        while(startIndex < getSize()) {
             returning->add(get(startIndex));
             startIndex += 1;
         }
@@ -755,6 +758,7 @@ class FloatArray : public Object {
             if (obj) {
                 return static_cast <FloatObj*> (obj)->getFloat();
             }
+            return NULL;
         }
 
         /**
@@ -867,7 +871,7 @@ class FloatArray : public Object {
             if (endIndex > getSize() || startIndex > endIndex) {
                 return NULL;
             }
-            while(endIndex < getSize()) {
+            while(startIndex < getSize()) {
                 returning->add(get(startIndex));
                 startIndex += 1;
             }
@@ -893,9 +897,9 @@ class FloatArray : public Object {
          * @arg to_remove int that all instances in the array will be removed of
          **/
         void removeAll(float to_remove) {
-            IntObj* float_obj = new IntObj(to_remove);
+            FloatObj* float_obj = new FloatObj(to_remove);
             float_arr->removeAll(float_obj);
-            delete float_arr;
+            delete float_obj;
         }
 
         /**
@@ -968,6 +972,9 @@ class BoolArray : public Object {
             Object* obj = bool_arr->get(index); 
             if (obj) {
                 return static_cast <BoolObj*> (obj)->getBool();
+            }
+            else {
+                return NULL;
             }
         }
 
