@@ -3,6 +3,9 @@
 #include "object.h"
 #include "string.h"
 #include "helper.h"
+#include "columns.h"
+#include <cstdarg>
+
 
 
 union Data {

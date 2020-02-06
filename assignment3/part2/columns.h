@@ -4,7 +4,9 @@
 #include "string.h"
 #include <cstdarg>
 
-
+/**
+ * 
+ */
 class Column : public Object {
     public:
 

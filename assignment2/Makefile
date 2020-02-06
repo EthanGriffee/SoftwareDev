@@ -17,7 +17,7 @@ first:
 	cd ./part1/test-array; git checkout $(ARRAYSPECHASH)
 	cd ./part1; cp array.h queue.h map.h string.h object.h Makefile ./test-array 
 #	TODO: cp anything else to compile and run e.g. googletests? my-tests.cpp edited-tests.cpp 
-	- docker run -ti -v `pwd`:/test cs4500:0.1 bash -c "cd /test/part1/test-array ; make testArray"
+	- docker run -ti -v `$pwd`:/test cs4500:0.1 bash -c "cd /test/part1/test-array ; make testArray"
 
 second:
 	docker build -t cs4500:0.1 . 
@@ -26,7 +26,7 @@ second:
 	cd ./part1/test-queue; git checkout $(QUEUESPECHASH)
 	cd ./part1; cp array.h queue.h map.h string.h object.h Makefile ./test-queue 
 #	TODO: cp anything else to compile and run e.g. googletests? my-tests.cpp edited-tests.cpp 
-	- docker run -ti -v `pwd`:/test cs4500:0.1 bash -c "cd /test/part1/test-queue ; make testQueue"
+	- docker run -ti -v `$pwd`:/test cs4500:0.1 bash -c "cd /test/part1/test-queue ; make testQueue"
 
 third:
 	docker build -t cs4500:0.1 . 
@@ -35,7 +35,7 @@ third:
 	cd ./part1/test-map; git checkout $(MAPSPECHASH)
 	cd ./part1; cp array.h queue.h map.h string.h object.h Makefile ./test-map
 #	TODO: cp anything else to compile and run e.g. googletests? my-tests.cpp edited-tests.cpp 
-	- docker run -ti -v `pwd`:/test cs4500:0.1 bash -c "cd /test/part1/test-map ; make testMap"
+	- docker run -ti -v `$pwd`:/test cs4500:0.1 bash -c "cd /test/part1/test-map ; make testMap"
 
 dircheck: ./part1 ./part1/array.h ./part1/queue.h ./part1/map.h ./part1/string.h ./part1/object.h ./part1/Makefile ./part1/MEMO.md ./part2 ./part2/REPO.md
 	echo "Directory structure looks OK"
