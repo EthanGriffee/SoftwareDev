@@ -11,6 +11,14 @@ union Data {
    String* s;
 }; 
 
+enum types {
+    STRING,
+    BOOLEAN,
+    FLOAT,
+    INT,
+    BASIC
+};
+
 
 /**
  * A Column is an Object that is meant to store data in a specific order.
@@ -50,10 +58,13 @@ class Column : public Object {
         virtual bool equals(Object* other) { }
 
         /**
-         * Returns an empty string.
+         * Returns BASIC.
          */
-        virtual String* colType() { }
+        virtual types colType() { }
 
+        /**
+         * Returns an error as a non-typed column has no data
+         */
         virtual Data get() { }
 };
 
@@ -84,9 +95,15 @@ class IntColumn : public Column {
         virtual bool equals(Object* other) { }
 
         /**
-         * Returns "Int".
+         * Returns INT.
          */
-        virtual String* colType() { }
+        virtual types colType() { }
+
+        /**
+         * Adds i to the bottom of the column.
+         */
+        void push(int i);
+
 };
 
 
@@ -101,6 +118,9 @@ class StringColumn : public Column {
          */
         StringColumn(String*...) : Column() { }
 
+        /**
+         * Does not delete strings in this column
+         */
         ~StringColumn() { }
 
         /**
@@ -116,9 +136,14 @@ class StringColumn : public Column {
         virtual bool equals(Object* other) { }
 
         /**
-         * returns "String".
+         * returns STRING.
          */
-        virtual String* colType() { }
+        virtual types colType() { }
+
+        /**
+         * Adds s to the bottom of the column.
+         */
+        void push(String* s);
 
 };
 
@@ -149,9 +174,14 @@ class BooleanColumn : public Column {
         virtual bool equals(Object* other) { }
 
         /**
-         * returns "Boolean".
+         * returns BOOLEAN.
          */
-        virtual String* colType() { }
+        virtual types colType() { }
+
+        /**
+         * Adds b to the bottom of the column.
+         */
+        void push(bool b);
 
 };
 
@@ -180,8 +210,13 @@ class FloatColumn : public Column {
         virtual bool equals(Object* other) { }
 
         /**
-         * returns "Float".
+         * returns FLOAT.
          */
-        virtual String* colType() { }
+        virtual types colType() { }
+
+        /**
+         * Adds f to the bottom of the column.
+         */
+        void push(float f);
 
 };

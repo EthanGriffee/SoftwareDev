@@ -177,5 +177,20 @@ class DataFrame : public Object {
             
         }
 
+        /**
+         * Returns a new dataframe that has rows that are equal in both this 
+         * and other
+         */
+        DataFrame* dataUnion(DataFrame* other) { 
+
+        }
+
+        /**
+         * Adds col to the dataframe
+         */
+        void addCol(Column* col) {
+            
+        }
+
 
 };
