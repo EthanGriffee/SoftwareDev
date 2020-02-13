@@ -9,10 +9,10 @@
 
 class Map_Node : public Object {
     public:
-        Object* key;
-        Object* value;
+        String* key;
+        String* value;
 
-        Map_Node(Object* key, Object* value) {
+        Map_Node(String* key, String* value) {
             this->key = key;
             this->value = value;
         }
@@ -21,25 +21,25 @@ class Map_Node : public Object {
             
         }
 
-        void changeValue(Object* new_val) {
+        void changeValue(String* new_val) {
             this->value = new_val;
         }
 
-        Object* getKey() {
+        String* getKey() {
             return key;
         }
 
-        Object* getValue() {
+        String* getValue() {
             return value;
         }
 
-        bool equals(Object* other) {
+        bool equals(String* other) {
             return other->equals(key);
         }
 };
 
 /**
- * A dictionary of string keys and object values.  All keys and values are owned
+ * A dictionary of string keys and String values.  All keys and values are owned
  * by the caller, and none of the map's methods will modify them.  Keys which
  * are .equals are equal, i.e. the map will never contain two keys which are
  * extensionally equivalent at the same time.
@@ -72,7 +72,7 @@ class Map : public Object
          * private method that returns the array that 
          * would contain key.
          */
-        Array* findArray_(Object* key){
+        Array* findArray_(String* key){
             return hashmap[key->hash() % MAX_HASH_LENGTH];
         }
 
@@ -80,7 +80,7 @@ class Map : public Object
          * Returns the value which was set for this key.
          * Returns nullptr if not in map.
          */
-        virtual Object *get(Object *key) {
+        virtual String *get(String *key) {
             Array* arr = findArray_(key);
             int x = arr->indexOf(key);
             if (x == -1) {
@@ -94,7 +94,7 @@ class Map : public Object
         /**
          * Set the value at the given key in this map.
          */
-        virtual void set(Object *key, Object *value) {
+        virtual void set(String *key, String *value) {
             Array* arr = findArray_(key);
             int x = arr->indexOf(key);
             if (x == -1) { 
@@ -111,7 +111,7 @@ class Map : public Object
         /**
          * Remove the value at the given key in this map. No-op if value not in map.
          */
-        virtual void remove(Object *key) {
+        virtual void remove(String *key) {
             Array* arr = findArray_(key);
             if (arr->indexOf(key) != -1) {
                 arr->remove(key);
@@ -122,7 +122,7 @@ class Map : public Object
         /**
          * Determine if the given key is in this map.
          */
-        virtual bool has(Object *key) {
+        virtual bool has(String *key) {
             Array* arr = findArray_(key);
             return arr->indexOf(key) != -1;
         }
@@ -131,7 +131,7 @@ class Map : public Object
          * private method used to delete map nodes
          */
         void delete_map_nodes_() {
-            Object** arr_keys = new Object*[size()];
+            String** arr_keys = new String*[size()];
             keys(arr_keys);
             for (int i = 0; i < size(); i++) {
                 Array* arr = findArray_(arr_keys[i]);
@@ -161,7 +161,7 @@ class Map : public Object
          * Store keys in the given array. Caller responsible for allocating at least
          * Map::size() elements.
          */
-        virtual void keys(Object **dest) {
+        virtual void keys(String **dest) {
             size_t count = 0;
             for (int i = 0; i < MAX_HASH_LENGTH; i++) {
                 Array* arr = hashmap[i];
@@ -172,7 +172,7 @@ class Map : public Object
             }
         }
 
-        virtual bool equals(Object* other) {
+        virtual bool equals(String* other) {
             return other->equals(this);
         }
 
@@ -180,7 +180,7 @@ class Map : public Object
             if (other->size() != num_elements) {
                 return false;
             }
-            Object** other_keys = new Object*[other->size()];
+            String** other_keys = new String*[other->size()];
             other->keys(other_keys);
             for (int i = 0; i < other->size(); i++) {
                 if (!other->get(other_keys[i])->equals(this->get(other_keys[i]))) {
