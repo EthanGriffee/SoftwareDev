@@ -10,9 +10,9 @@
 class Map_Node : public Object {
     public:
         String* key;
-        String* value;
+        char value;
 
-        Map_Node(String* key, String* value) {
+        Map_Node(String* key, char value) {
             this->key = key;
             this->value = value;
         }
@@ -21,15 +21,15 @@ class Map_Node : public Object {
             
         }
 
-        void changeValue(String* new_val) {
-            this->value = new_val;
+        void changeValue(char new_val) {
+            value = new_val;
         }
 
         String* getKey() {
             return key;
         }
 
-        String* getValue() {
+        char getValue() {
             return value;
         }
 
@@ -78,13 +78,13 @@ class Map : public Object
 
         /**
          * Returns the value which was set for this key.
-         * Returns nullptr if not in map.
+         * exits  if not in map.
          */
-        virtual String *get(String *key) {
+        virtual char get(String *key) {
             Array* arr = findArray_(key);
             int x = arr->indexOf(key);
             if (x == -1) {
-                return nullptr;
+                exit(1);
             }
             else {
                 return static_cast<Map_Node*> (arr->get(x))->getValue(); 
@@ -94,7 +94,7 @@ class Map : public Object
         /**
          * Set the value at the given key in this map.
          */
-        virtual void set(String *key, String *value) {
+        virtual void set(String *key, char value) {
             Array* arr = findArray_(key);
             int x = arr->indexOf(key);
             if (x == -1) { 
@@ -183,7 +183,7 @@ class Map : public Object
             String** other_keys = new String*[other->size()];
             other->keys(other_keys);
             for (int i = 0; i < other->size(); i++) {
-                if (!other->get(other_keys[i])->equals(this->get(other_keys[i]))) {
+                if (!other->get(other_keys[i]) == (this->get(other_keys[i]))) {
                     delete[] other_keys;
                     return false;
                 }
