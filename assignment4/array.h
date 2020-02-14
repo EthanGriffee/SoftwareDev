@@ -246,6 +246,20 @@ public:
         array[index] = to_add;
     }
 
+    virtual void set(Object* to_add, size_t index) {
+        if (index > size) {
+            return;
+        }
+        if (index == size) {
+            add(to_add);
+            return;
+        }
+        if (size + 2 >= max_capacity) {
+            resize();
+        }
+        array[index] = to_add;
+    }
+
     /**
      * Adds all the elements of the provided array at the given index, 
      * unless the given array is NULL, then it will not be added. Otherwise, 
@@ -482,6 +496,10 @@ class StringArray : public Object {
          return str_arr->add(to_add, index);
      }
 
+    virtual void set(String* to_add, size_t index) {
+        return str_arr->add(to_add, index);
+    }
+
     /**
      * Adds all the elements of the provided array at the given index, 
      * unless the given array is NULL, then it will not be added. Otherwise, 
@@ -623,6 +641,12 @@ class IntArray : public Object {
         }
         return NULL;
     }
+
+
+    virtual void set(int to_add, size_t index) {
+        IntObj* obj = new IntObj(to_add);
+        return int_arr->set(obj, index);
+    }   
 
 
     /**
@@ -882,6 +906,11 @@ class FloatArray : public Object {
             float_arr->add(float_obj);
         }
 
+        virtual void set(float to_add, size_t index) {
+            FloatObj* obj = new FloatObj(to_add);
+            return float_arr->set(obj, index);
+        }   
+
         /**
          * Adds the provided array to the end of the list, unless the given array is NULL, 
          * then it will not be added. 
@@ -1110,6 +1139,13 @@ class BoolArray : public Object {
     void addAll(BoolArray* to_add) {
         bool_arr->addAll(to_add->bool_arr);
     }
+
+
+    
+    virtual void set(bool to_add, size_t index) {
+        BoolObj* obj = new BoolObj(to_add);
+        return bool_arr->set(obj, index);
+    }   
 
     /**
      * Adds the provided bool at the given index. All elements previously at the index and

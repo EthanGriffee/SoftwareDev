@@ -1,0 +1,14 @@
+# Target labels
+ googletest
+# Source files and their labels
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/CMakeFiles/googletest
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/CMakeFiles/googletest.rule
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/CMakeFiles/googletest-complete.rule
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/googletest-prefix/src/googletest-stamp/googletest-install.rule
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/googletest-prefix/src/googletest-stamp/googletest-mkdir.rule
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/googletest-prefix/src/googletest-stamp/googletest-download.rule
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/googletest-prefix/src/googletest-stamp/googletest-update.rule
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/googletest-prefix/src/googletest-stamp/googletest-patch.rule
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/googletest-prefix/src/googletest-stamp/googletest-configure.rule
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/googletest-prefix/src/googletest-stamp/googletest-build.rule
+/Users/ethangriffee/SoftwareDev/hw/partnerhws/assignment4/part1/googletest-download/googletest-prefix/src/googletest-stamp/googletest-test.rule

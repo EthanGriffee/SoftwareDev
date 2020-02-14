@@ -5,6 +5,7 @@
 #include "object.h"
 #include "string.h"
 #include "array.h"
+#include "helper.h"
 
 
 class Map_Node : public Object {
@@ -33,7 +34,7 @@ class Map_Node : public Object {
             return value;
         }
 
-        bool equals(String* other) {
+        bool equals(Object* other) {
             return other->equals(key);
         }
 };
@@ -99,7 +100,7 @@ class Map : public Object
             int x = arr->indexOf(key);
             if (x == -1) { 
                 num_elements += 1;
-                return arr->add(new Map_Node(key, value));
+                arr->add(new Map_Node(key, value));
             }
             else {
                 Map_Node* m = static_cast<Map_Node*> (arr->get(x));
@@ -183,7 +184,7 @@ class Map : public Object
             String** other_keys = new String*[other->size()];
             other->keys(other_keys);
             for (int i = 0; i < other->size(); i++) {
-                if (!other->get(other_keys[i]) == (this->get(other_keys[i]))) {
+                if (!(other->get(other_keys[i]) == (this->get(other_keys[i])))) {
                     delete[] other_keys;
                     return false;
                 }
@@ -197,6 +198,7 @@ class Map : public Object
             for (int i = 0; i < MAX_HASH_LENGTH; i++) {
                 count += hashmap[i]->hash();
             }
+            return count;
         }
 
     

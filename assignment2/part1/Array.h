@@ -290,7 +290,7 @@ public:
      * Hashes the array based on user specifications. Default implementation is
      * to hash all internal elements and sum them up. 
      **/
-    size_t hash_me_() {
+    size_t hash() {
         size_t n = 0;
         for(int x = 0; x < size; x++) {
             n += array[x]->hash();
@@ -499,7 +499,7 @@ class StringArray : public Object {
      * Hashes the array based on user specifications. Default implementation is
      * to hash all internal elements and sum them up. 
      **/
-    size_t hash_me_() {
+    size_t hash() {
         return str_arr->hash() + 1;
     }
 
@@ -715,8 +715,8 @@ class IntArray : public Object {
      * Hashes the array based on user specifications. Default implementation is
      * to hash all internal elements and sum them up. 
      **/
-    size_t hash_me_() {
-        return int_arr->hash_me_() + 2;
+    size_t hash() {
+        return int_arr->hash() + 2;
     }
 };
 
@@ -931,8 +931,8 @@ class FloatArray : public Object {
      * Hashes the array based on user specifications. Default implementation is
      * to hash all internal elements and sum them up. 
      **/
-    size_t hash_me_() {
-        return float_arr->hash_me_() + 3;
+    size_t hash() {
+        return float_arr->hash() + 3;
     }
 };
 
@@ -1149,7 +1149,7 @@ class BoolArray : public Object {
      * Hashes the array based on user specifications. Default implementation is
      * to hash all internal elements and sum them up. 
      **/
-    size_t hash_me_() {
-        return bool_arr->hash_me_() + 4;
+    size_t hash() {
+        return bool_arr->hash() + 4;
     }
 };

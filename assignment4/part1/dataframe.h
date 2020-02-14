@@ -6,6 +6,8 @@
 #include "../helper.h"
 #include "../map.h"
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 class BoolColumn;
 class FloatColumn;
@@ -92,7 +94,7 @@ class IntColumn : public Column {
   IntArray* arr_;
 
   IntColumn() {
-    IntArray* arr_ = new IntArray();
+    arr_ = new IntArray();
   }
 
   IntColumn(int n, ...) {
@@ -139,7 +141,7 @@ class StringColumn : public Column {
  public:
   StringArray* arr_;
   StringColumn() {
-    StringArray* arr_ = new StringArray();
+    arr_ = new StringArray();
   }
 
   StringColumn(String* n, ...) {
@@ -183,7 +185,7 @@ class BoolColumn : public Column {
  public:
   BoolArray* arr_;
   BoolColumn() {
-    BoolArray* arr_ = new BoolArray();
+    arr_ = new BoolArray();
   }
 
   BoolColumn(bool b, ...) {
@@ -227,7 +229,7 @@ class FloatColumn : public Column {
  public:
   FloatArray* arr_;
   FloatColumn() {
-    FloatArray* arr_ = new FloatArray();
+    arr_ = new FloatArray();
   }
 
   FloatColumn(bool b, ...) {
@@ -270,13 +272,13 @@ class FloatColumn : public Column {
  **/
 class ColumnArray : public Object {
   public:
-      Array* str_arr;
+      Array* col_arr;
 
       /**
        * Default constructor which will set the initial max-capacity to the array to 10. 
        **/
       ColumnArray() {
-          str_arr = new Array();
+          col_arr = new Array();
       }
 
       /**
@@ -284,14 +286,14 @@ class ColumnArray : public Object {
        * @arg arr Array containing values to be used in initialization. 
        **/
       ColumnArray(ColumnArray* arr) {
-          str_arr = arr->str_arr;
+          col_arr = arr->col_arr;
       }
 
       /**
        * Destructor which will free the memory of the underlying array as well. 
        **/
       ~ColumnArray() {
-          delete str_arr;
+          delete col_arr;
       }
 
       /**
@@ -300,7 +302,7 @@ class ColumnArray : public Object {
        * @arg index Location to get the value in the array at. 
        **/
       Column* get(size_t index) {
-          return static_cast <Column*> (str_arr->get(index));
+          return static_cast <Column*> (col_arr->get(index));
       }
 
 
@@ -309,7 +311,7 @@ class ColumnArray : public Object {
        * Reinitializes the size to 0. 
        **/
       void clear() {
-          str_arr->clear();
+          col_arr->clear();
       }
 
       /**
@@ -319,7 +321,7 @@ class ColumnArray : public Object {
        * underlying array less the number of elements is 2. 
        **/
       void resize() {
-          str_arr->resize();
+          col_arr->resize();
       }
 
       /**
@@ -329,7 +331,7 @@ class ColumnArray : public Object {
        * @arg to_find Column to find the index of. 
        **/
       int indexOf(Object* to_find) {
-          return str_arr->indexOf(to_find);
+          return col_arr->indexOf(to_find);
       }
 
       /**
@@ -339,7 +341,7 @@ class ColumnArray : public Object {
        * @arg to_add Object to be added to the array. 
        **/
       void add(Column* to_add) {
-          return str_arr->add(to_add);
+          return col_arr->add(to_add);
       }
 
   /**
@@ -350,7 +352,7 @@ class ColumnArray : public Object {
    * @arg to_add Array of Column that all need to be added to this array. 
    **/
     void addAll(ColumnArray* to_add) {
-        return str_arr->addAll(to_add->str_arr);
+        return col_arr->addAll(to_add->col_arr);
     }
 
   /**
@@ -365,7 +367,7 @@ class ColumnArray : public Object {
    * @arg index Location to add the Object at
    **/
     void add(Column* to_add, size_t index) {
-        return str_arr->add(to_add, index);
+        return col_arr->add(to_add, index);
     }
 
   /**
@@ -380,7 +382,7 @@ class ColumnArray : public Object {
    * @arg index Location to add the objects to the array at
    **/
     void addAll(ColumnArray* to_add, size_t index) {
-      str_arr->addAll(to_add->str_arr, index);
+      col_arr->addAll(to_add->col_arr, index);
     }
 
   /**
@@ -427,7 +429,7 @@ class ColumnArray : public Object {
    * @arg to_remove Column to be removed from the array
    **/
     void remove(Object* to_remove) {
-        str_arr->remove(to_remove);
+        col_arr->remove(to_remove);
     }
 
   /**
@@ -438,14 +440,14 @@ class ColumnArray : public Object {
    * @arg to_remove Column that all instances in the array will be removed of
    **/
     void removeAll(Object* to_remove) {
-        str_arr->removeAll(to_remove);
+        col_arr->removeAll(to_remove);
     }
 
   /**
    * Returns number of elements in the array. 
    **/
     size_t getSize() {
-        return str_arr->getSize();
+        return col_arr->getSize();
     }
 
   /**
@@ -457,7 +459,7 @@ class ColumnArray : public Object {
    **/
   bool equals(Object* other) {
       ColumnArray* o = dynamic_cast<ColumnArray*> (other);
-      return o->str_arr->equals(this->str_arr);
+      return o->col_arr->equals(this->col_arr);
   }
 
   /**
@@ -466,7 +468,7 @@ class ColumnArray : public Object {
    * to hash all internal elements and sum them up. 
    **/
   size_t hash_me_() {
-      return str_arr->hash() + 1;
+      return col_arr->hash() + 1;
   }
 
 };
@@ -508,11 +510,13 @@ class Schema : public Object {
     row_names_ = new StringArray();
     col_names_ = new StringArray();
     name_to_type_ = new Map();
-
     int x = 0;
-    char m = x + '0';
+    char curr_type;
     while (types[x] != '\0') {
-      add_column(types[x], new String(&m));
+      char* str_name = new char[33];
+      sprintf(str_name, "%d", x); 
+      curr_type = char(types[x]);
+      add_column(curr_type, new String(str_name));
       x += 1;
     }
   }
@@ -540,12 +544,12 @@ class Schema : public Object {
   /** Return name of column at idx; nullptr indicates no name given.
     *  An idx >= width is undefined.*/
   String* col_name(size_t idx) {
-    col_names_->get(idx);
+    return col_names_->get(idx);
   }
  
   /** Return type of column at idx. An idx >= width is undefined. */
   char col_type(size_t idx) {
-    return name_to_type_->get(col_names_->get(idx));
+    return name_to_type_->get(col_name(idx));
   }
  
   /** Given a column name return its index, or -1. */
@@ -618,6 +622,7 @@ public:
   }
 
   virtual void accept_(Object* obj) {
+    perror("calling accept on an Object that is not a Bool, Float, Int, or String");
     exit(1);
   }
 
@@ -693,26 +698,26 @@ class Row : public Object {
     * a value of the wrong type is undefined. */
   void set(size_t col, int val) {
     if (col_type(col) == 'I') {
-      row_->add(new IntObj(val));
+      row_->set(new IntObj(val), col);
     }
   }
 
   void set(size_t col, float val) {
     if (col_type(col) == 'F') {
-      row_->add(new FloatObj(val));
+      row_->set(new FloatObj(val), col);
     }
   }
 
   void set(size_t col, bool val) {
     if (col_type(col) == 'B') {
-      row_->add(new BoolObj(val));
+      row_->set(new BoolObj(val), col);
     }
   }
 
   /** The string is external. */
   void set(size_t col, String* val) {
     if (col_type(col) == 'S') {
-      row_->add(val);
+      row_->set(val, col);
     }
   }
  
@@ -734,6 +739,7 @@ class Row : public Object {
       return intobj->getInt();
     }
     else {
+      perror("calling get_int on a col_indx that is not a int column");
       exit(1);
     }
   }
@@ -744,6 +750,7 @@ class Row : public Object {
       return boolobj->getBool();
     }
     else {
+      perror("calling get_bool on a col_indx that is not a bool column");
       exit(1);
     }
   }
@@ -754,6 +761,7 @@ class Row : public Object {
       return floatobj->getFloat();
     }
     else {
+      perror("calling get on a get_float that is not a float column");
       exit(1);
     }
   }
@@ -764,6 +772,7 @@ class Row : public Object {
       return str;
     }
     else {
+      perror("calling get_string on a col_indx that is not a String column");
       exit(1);
     }
   }
@@ -775,7 +784,7 @@ class Row : public Object {
  
    /** Type of the field at the given position. An idx >= width is  undefined. */
   char col_type(size_t idx) {
-    scm.col_type(idx);
+    return  scm.col_type(idx);
   }
  
   /** Given a Fielder, visit every field of this row. The first argument is
@@ -1040,6 +1049,7 @@ class DataFrame : public Object {
   DataFrame(DataFrame& df) {
     scm = new Schema();
     Schema scmCoppying = df.get_schema();
+    row_arr_ = new RowArray();
     for (int i = 0; i < df.ncols(); i++) {
       scm->add_column(scmCoppying.col_type(i), scmCoppying.col_name(i));
     }
@@ -1066,7 +1076,8 @@ class DataFrame : public Object {
     * empty. */
   DataFrame(Schema& schema) {
     scm = &schema;
-    Array* columns_ = new Array();
+    columns_ = new ColumnArray();
+    row_arr_ = new RowArray();
     for (int i = 0; i < scm->width(); i++) {
       switch(scm->col_type(i)) {
         case 'F':

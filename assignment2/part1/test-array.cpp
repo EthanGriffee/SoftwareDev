@@ -267,11 +267,12 @@ class TestArrayMethods {
 
     void testBasicFloatArray() {
         initconditions();
+        float tolerance = .001;
         farr->add(1.1);
         farr->add(2.1);
-        cout->t_true(farr->get(0) == 1.1);
+        cout->t_true(farr->get(0) >= 1.1 - tolerance && farr->get(0) <= 1.1 + tolerance);
         farr->add(0.1,0);
-        cout->t_true(farr->get(0) == 0.1);
+        cout->t_true(farr->get(0) >= 0.1 - tolerance && farr->get(0) <= 0.1 + tolerance);
         cout->t_true(farr->getSize() == 3);
         farr2->add(3.1);
         farr2->add(4.1);
@@ -286,10 +287,10 @@ class TestArrayMethods {
         cout->t_true(farr3->getSize() == 5);
         farr3->removeAll(0.1);
         cout->t_true(farr3->getSize() == 4);
-        cout->t_true(farr3->get(0) == 1.1);
+        cout->t_true(farr3->get(0) == 1.1 - tolerance && farr->get(0) <= 1.1 + tolerance);
         farr3->remove(1.1);
         cout->t_true(farr3->getSize() == 3);
-        cout->t_true(farr3->get(0) == 2.1);
+        cout->t_true(farr3->get(0) == 2.1 - tolerance && farr->get(0) <= 2.1 + tolerance);
         farr4 = farr->subArray(2,4);
         cout->t_true(farr4->equals(farr3));
         cout->pln("Basic Float Array Functions work");
@@ -318,7 +319,7 @@ class TestArrayMethods {
         cout->t_true(barr3->getSize() == 2);
         cout->t_true(barr3->get(0) == true);
         barr3->remove(true);
-        cout->t_true(barr3->getSize() == 0);
+        cout->t_true(barr3->getSize() == 1);
         cout->pln("Basic Float Array Functions work");
         clear();
     }

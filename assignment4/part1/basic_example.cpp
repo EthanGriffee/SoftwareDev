@@ -1,6 +1,8 @@
+#include "../helper.h"
 #include "dataframe.h" 
 
 void test() {
+  Sys st;
   Schema s("II");
 
   DataFrame df(s);
@@ -10,8 +12,11 @@ void test() {
     r.set(1,(int)i+1);
     df.add_row(r);
   }
-  exit(0);
+  st.t_true(df.get_int((size_t)0,1) ==  1);
+  st.OK("fkkd");
 }
+
+
 
 int main(int argc, char **argv) {
     test();
