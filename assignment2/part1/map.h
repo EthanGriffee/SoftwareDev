@@ -9,10 +9,10 @@
 
 class Map_Node : public Object {
     public:
-        Object* key;
+        String* key;
         Object* value;
 
-        Map_Node(Object* key, Object* value) {
+        Map_Node(String* key, Object* value) {
             this->key = key;
             this->value = value;
         }
@@ -25,7 +25,7 @@ class Map_Node : public Object {
             this->value = new_val;
         }
 
-        Object* getKey() {
+        String* getKey() {
             return key;
         }
 
@@ -34,7 +34,7 @@ class Map_Node : public Object {
         }
 
         bool equals(Object* other) {
-            return other->equals(key);
+            return key->equals(other);
         }
 
         size_t hash() {
@@ -99,27 +99,32 @@ class Map : public Object
          * Set the value at the given key in this map.
          */
         virtual void set(Object *key, Object *value) {
-            Array* arr = findArray_(key);
-            int x = arr->indexOf(key);
-            if (x == -1) { 
-                num_elements += 1;
-                arr->add(new Map_Node(key, value));
+            String* str_key = dynamic_cast<String*> (key);
+            if (str_key) {
+                Array* arr = findArray_(str_key);
+                int x = arr->indexOf(str_key);
+                if (x == -1) { 
+                    num_elements += 1;
+                    arr->add(new Map_Node(str_key, value));
+                }
+                else {
+                    Map_Node* m = static_cast<Map_Node*> (arr->get(x));
+                    m->changeValue(value);
+                }
             }
-            else {
-                Map_Node* m = static_cast<Map_Node*> (arr->get(x));
-                m->changeValue(value);
-            }
-
         }
 
         /**
          * Remove the value at the given key in this map. No-op if value not in map.
          */
         virtual void remove(Object *key) {
-            Array* arr = findArray_(key);
-            if (arr->indexOf(key) != -1) {
-                arr->remove(key);
-                num_elements -= 1;
+            String* str_key = dynamic_cast<String*> (key);
+            if (str_key) {
+                Array* arr = findArray_(str_key);
+                if (arr->indexOf(str_key) != -1) {
+                    arr->remove(str_key);
+                    num_elements -= 1;
+                }
             }
         }
 
@@ -127,8 +132,12 @@ class Map : public Object
          * Determine if the given key is in this map.
          */
         virtual bool has(Object *key) {
-            Array* arr = findArray_(key);
-            return arr->indexOf(key) != -1;
+            String* str_key = dynamic_cast<String*> (key);
+            if (!str_key) {
+                return false;
+            }
+            Array* arr = findArray_(str_key);
+            return arr->indexOf(str_key) != -1;
         }
 
         /**
@@ -170,18 +179,15 @@ class Map : public Object
             for (int i = 0; i < MAX_HASH_LENGTH; i++) {
                 Array* arr = hashmap[i];
                 for (int x = 0; x < arr->getSize(); x++) {
-                    dest[count] = static_cast<Map_Node*> (arr->array[x])->getKey();
+                    dest[count] = static_cast<Map_Node*> (arr->get(x))->getKey();
                     count += 1;
                 }
             }
         }
 
-        virtual bool equals(Object* other) {
-            return other->equals(this);
-        }
-
-        virtual bool equals(Map* other) {
-            if (other->size() != num_elements) {
+        virtual bool equals(Object* obj) {
+            Map* other = dynamic_cast<Map*> (obj);
+            if (!other || other->size() != num_elements) {
                 return false;
             }
             Object** other_keys = new Object*[other->size()];
