@@ -13,7 +13,6 @@ class OnlyTrueRower : public Rower {
       should be kept. */
   virtual bool accept(Row& r) {
     for (int x = 0; x < r.width(); x++) {
-      
       if (r.col_type(x) == 'B' && !r.get_bool(x)) {
         Sys s;
         s.p(r.get_bool(x));
@@ -132,16 +131,13 @@ void rower_filter_dataframe_test() {
   r.set(1, false);
   df.add_row(r);
 
+
   OnlyTrueRower rower;
   DataFrame* df2 = df.filter(rower);
-  st.OK("1");
-  return;
   st.t_true(df2->get_int(0, 0) == df.get_int(0, 1));
-  st.OK("2");
+  st.p(df2->nrows());
   st.t_true(df2->nrows() == 1);
-  st.OK("3");
   df2->add_row(r);
-  st.OK("4");
   st.t_true(df2->get_int(0, 1) == 2);
 }
 
@@ -164,5 +160,5 @@ void copying_dataframe_test() {
 
 
 int main(int argc, char **argv) {
-    copying_dataframe_test();
+    rower_filter_dataframe_test();
 }

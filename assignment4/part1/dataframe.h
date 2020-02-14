@@ -694,12 +694,6 @@ class Row : public Object {
     row_ = new Array();
   }
 
-  Row(Row& r) {
-    row_idx_ = r.row_idx_;
-    scm = r.scm;
-    row_ = new Array(*(r.row_));
-  }
-
  
   /** Setters: set the given column with the given value. Setting a column with
     * a value of the wrong type is undefined. */
@@ -1196,23 +1190,36 @@ class DataFrame : public Object {
   /** Add a row at the end of this dataframe. The row is expected to have
    *  the right schema and be filled with values, otherwise undedined.  */
   void add_row(Row& row) {
-    Row r(row);
-    row_arr_->add(&r);
+    Row* r = new Row(get_schema());
+    r->set_idx(nrows() - 1);
+    row_arr_->add(r);
     for(size_t i = 0; i < row.width(); i++) {
       Column* curr_column = columns_->get(i);
       switch(columns_->get(i)->get_type()) {
-        case 'F':
-          curr_column->push_back(r.get_float(i));
+        case 'F': {
+          float f = row.get_float(i);
+          curr_column->push_back(f);
+          r->set(i, f);
           break;
-        case 'I':
-          curr_column->push_back(r.get_int(i));
+        }
+        case 'I': {
+          int in = row.get_int(i);
+          curr_column->push_back(in);
+          r->set(i, in);
           break;
-        case 'B':
-          curr_column->push_back(r.get_bool(i));
+        }
+        case 'B': {
+          bool b = row.get_bool(i);
+          curr_column->push_back(b);
+          r->set(i, b);
           break;
-        case 'S':
-          curr_column->push_back(r.get_string(i));
+        }
+        case 'S': {
+          String* s = row.get_string(i);
+          curr_column->push_back(s);
+          r->set(i, s);
           break;
+        }
       }
     }
   }
@@ -1243,9 +1250,11 @@ class DataFrame : public Object {
       if (r.accept(row)) {
         Sys x;
         x.p("fdsfds");
+        
         n->add_row(row);
       }
     }
+    return n;
   }
 
   /** Print the dataframe in SoR format to standard output. */
