@@ -61,6 +61,14 @@ class Map : public Object
             num_elements = 0;
         }
 
+        Map(Map& m) {
+            hashmap = new  Array*[MAX_HASH_LENGTH];
+            for (size_t x = 0; x < MAX_HASH_LENGTH; x++) {
+                hashmap[x] = new Array();
+            }
+            num_elements = m.size();
+        }
+
         virtual ~Map(){
             delete_map_nodes_();
             for (size_t x = 0; x < MAX_HASH_LENGTH; x++) {

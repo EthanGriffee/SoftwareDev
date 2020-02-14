@@ -117,7 +117,7 @@ class IntColumn : public Column {
 
   /** Set value at idx. An out of bound idx is undefined.  */
   void set(size_t idx, int val) {
-    return arr_->add(val, idx);
+    return arr_->set(val, idx);
   }
 
   virtual void push_back(int val) {
@@ -165,7 +165,7 @@ class StringColumn : public Column {
 
   /** Out of bound idx is undefined. */
   void set(size_t idx, String* val) {
-    return arr_->add(val, idx);
+    return arr_->set(val, idx);
   }
 
   virtual void push_back(String* val) {
@@ -209,7 +209,7 @@ class BoolColumn : public Column {
 
   /** Out of bound idx is undefined. */
   void set(size_t idx, bool val) {
-    return arr_->add(val, idx);
+    return arr_->set(val, idx);
   }
 
   virtual void push_back(bool val) {
@@ -253,7 +253,7 @@ class FloatColumn : public Column {
 
   /** Out of bound idx is undefined. */
   void set(size_t idx, bool val) {
-    return arr_->add(val, idx);
+    return arr_->set(val, idx);
   }
 
   virtual void push_back(float val) {
@@ -490,8 +490,8 @@ class Schema : public Object {
  
   /** Copying constructor */
   Schema(Schema& from) {
-    row_names_ = from.row_names_;
-    col_names_ = from.row_names_;
+    row_names_ =  from.row_names_;
+    col_names_ =  from.col_names_;
     name_to_type_ = from.name_to_type_;
   }
  
@@ -683,16 +683,23 @@ public:
  */
 class Row : public Object {
  public:
-  Schema scm;
+  Schema* scm;
   size_t row_idx_;
   Array* row_;
  
   /** Build a row following a schema. */
   Row(Schema& scm) {
-    this->scm = scm;
+    this->scm = &scm;
     row_idx_ = 0;
     row_ = new Array();
   }
+
+  Row(Row& r) {
+    row_idx_ = r.row_idx_;
+    scm = r.scm;
+    row_ = new Array(*(r.row_));
+  }
+
  
   /** Setters: set the given column with the given value. Setting a column with
     * a value of the wrong type is undefined. */
@@ -784,7 +791,7 @@ class Row : public Object {
  
    /** Type of the field at the given position. An idx >= width is  undefined. */
   char col_type(size_t idx) {
-    return  scm.col_type(idx);
+    return  scm->col_type(idx);
   }
  
   /** Given a Fielder, visit every field of this row. The first argument is
@@ -1028,10 +1035,9 @@ class Rower : public Object {
       original object will be the last to be called join on. The join method
       is reponsible for cleaning up memory. */
   virtual void join_delete(Rower* other) {
-    delete other;
   }
 };
- 
+
 /****************************************************************************
  * DataFrame::
  *
@@ -1050,11 +1056,11 @@ class DataFrame : public Object {
     scm = new Schema();
     Schema scmCoppying = df.get_schema();
     row_arr_ = new RowArray();
+    columns_ = new ColumnArray();
     for (int i = 0; i < df.ncols(); i++) {
-      scm->add_column(scmCoppying.col_type(i), scmCoppying.col_name(i));
-    }
-    for (int i = 0; i < scm->width(); i++) {
-      switch(scm->col_type(i)) {
+      char col_type = scmCoppying.col_type(i);
+      scm->add_column(col_type, scmCoppying.col_name(i));
+      switch(col_type) {
         case 'F':
           columns_->add(new FloatColumn());
           break;
@@ -1069,7 +1075,6 @@ class DataFrame : public Object {
           break;
       }
     }
-
   }
  
   /** Create a data frame from a schema and columns. All columns are created
@@ -1191,21 +1196,22 @@ class DataFrame : public Object {
   /** Add a row at the end of this dataframe. The row is expected to have
    *  the right schema and be filled with values, otherwise undedined.  */
   void add_row(Row& row) {
-    row_arr_->add(&row);
+    Row r(row);
+    row_arr_->add(&r);
     for(size_t i = 0; i < row.width(); i++) {
       Column* curr_column = columns_->get(i);
       switch(columns_->get(i)->get_type()) {
         case 'F':
-          curr_column->push_back(row.get_float(i));
+          curr_column->push_back(r.get_float(i));
           break;
         case 'I':
-          curr_column->push_back(row.get_int(i));
+          curr_column->push_back(r.get_int(i));
           break;
         case 'B':
-          curr_column->push_back(row.get_bool(i));
+          curr_column->push_back(r.get_bool(i));
           break;
         case 'S':
-          curr_column->push_back(row.get_string(i));
+          curr_column->push_back(r.get_string(i));
           break;
       }
     }
@@ -1233,8 +1239,11 @@ class DataFrame : public Object {
   DataFrame* filter(Rower& r) {
     DataFrame* n = new DataFrame(*scm);
     for (int i = 0; i < nrows(); i++) {
-      if (r.accept(*row_arr_->get(i))) {
-        n->add_row(*row_arr_->get(i));
+      Row row = *row_arr_->get(i);
+      if (r.accept(row)) {
+        Sys x;
+        x.p("fdsfds");
+        n->add_row(row);
       }
     }
   }

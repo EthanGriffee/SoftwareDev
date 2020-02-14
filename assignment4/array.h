@@ -116,6 +116,13 @@ public:
         array = new Object*[max_capacity];
     }
 
+    Array(Array& arr) {
+        size = arr.getSize();
+        max_capacity = arr.max_capacity;
+        array = new Object*[max_capacity];
+        this->addAll(&arr, 0);
+    }
+
     /**
      * Initalized this array with the characteristics of the passed in array.
      * @arg arr Array containing values to be used in initialization. 
@@ -405,6 +412,10 @@ class StringArray : public Object {
          **/
         StringArray() {
             str_arr = new Array();
+        }
+
+        StringArray(StringArray& strarr) {
+            str_arr = new Array(strarr.str_arr);
         }
 
         /**
