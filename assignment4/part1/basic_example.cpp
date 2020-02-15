@@ -74,6 +74,38 @@ void schema_test() {
   st.t_true(s.row_idx("ROW ") == -1);
 }
 
+void copy_column_names_test() {
+  Schema s;
+  s.add_column('S', new String("Student Name"));
+  s.add_column('F', new String("Student Grade"));
+  s.add_column('B', new String("Attendance"));
+  s.add_row(new String("Divit"));
+
+  Sys st;
+
+  DataFrame df(s);
+
+  DataFrame df2(df);
+  Schema s2 = df2.get_schema();
+
+  st.t_true(s2.col_name(0)->equals(new String("Student Name")));
+  st.OK("1");
+  st.t_true(s2.col_type(0) == 'S');
+  st.OK("2");
+  st.t_true(s2.col_name(1)->equals(new String("Student Grade")));
+  st.OK("3");
+  st.t_true(s2.col_type(1) == 'F');
+  st.OK("4");
+  st.t_true(s2.col_name(2)->equals(new String("Attendance")));
+  st.OK("5");
+  st.t_true(s2.col_type(2) == 'B');
+  st.OK("6");
+  st.t_true(s2.length() == 1);
+  st.OK("7");
+  st.t_true(s2.width() == 3);
+  st.OK("8");
+}
+
 void row_test() {
   Schema s("IFBS");
   Row r(s);
@@ -144,7 +176,6 @@ void rower_filter_dataframe_test() {
   st.OK("4");
   st.t_true(df2->get_int(0, 1) == 2);
 }
-
 
 void copying_dataframe_test() {
   Sys st;

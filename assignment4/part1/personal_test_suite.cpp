@@ -48,12 +48,23 @@ void column_as_int_test() {
 TEST(ColumnTest, column_as_int_test){ ASSERT_EXIT_ZERO(column_as_int_test); }
 
 
-// tests column as int
+// tests column as string 
 void column_as_string_test() {
     StringColumn* c = new StringColumn();
-    GT_TRUE(c->as_int() == nullptr);
+    GT_TRUE(c->as_string() == c);
     IntColumn* i = new IntColumn();
-    GT_TRUE(i->as_int() == i);
+    GT_TRUE(i->as_string() == nullptr);
+    exit(0);
+}
+
+TEST(ColumnTest, column_as_string_test){ ASSERT_EXIT_ZERO(column_as_string_test); }
+
+// tests column as boolean 
+void column_as_string_test() {
+    BoolColumn* b = new BoolColumn();
+    GT_TRUE(b->as_bool() == b);
+    FloatColumn* F = new FloatColumn();
+    GT_TRUE(f->as_bool() == nullptr);
     exit(0);
 }
 
