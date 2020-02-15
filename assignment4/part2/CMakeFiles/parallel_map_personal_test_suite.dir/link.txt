@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/parallel_map_personal_test_suite.dir/parallel_map_personal_test_suite.cpp.o  -o parallel_map_personal_test_suite lib/libgtest.a -lpthread 

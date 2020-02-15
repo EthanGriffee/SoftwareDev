@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string.h> //also called cstring
-#include "object.h"
+#include "object.h" 
 
 // String class
 class String : public Object {

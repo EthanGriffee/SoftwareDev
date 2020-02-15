@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/parallel_map_examples.dir/parallel_map_examples.cpp.o  -o parallel_map_examples lib/libgtest.a -lpthread 
