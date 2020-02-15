@@ -11,7 +11,10 @@ class FloatObj : public Object {
         // sets the value of f to input_f
         FloatObj(float input_f) {
             f = input_f;
+        }
 
+        FloatObj(FloatObj& f) {
+            f = f.getFloat();
         }
 
         // returns if other is a float that has the same f
@@ -38,6 +41,10 @@ class BoolObj : public Object {
         // sets the value of b to input_b
         BoolObj(bool input_b) {
             b = input_b;
+        }
+
+        BoolObj(BoolObj& b) {
+            b = b.getBool();
         }
 
         // returns if other is a boolean that has the same b
@@ -73,6 +80,11 @@ class IntObj : public Object{
             }
             return false;
             
+        }
+
+        
+        IntObj(IntObj& i) {
+            i = i.getInt();
         }
 
         // returns i
@@ -120,17 +132,10 @@ public:
         size = arr.getSize();
         max_capacity = arr.max_capacity;
         array = new Object*[max_capacity];
-        this->addAll(&arr, 0);
-    }
-
-    /**
-     * Initalized this array with the characteristics of the passed in array.
-     * @arg arr Array containing values to be used in initialization. 
-     **/
-    Array(Array* arr) {
-        this->array = arr->array;
-        this->size = arr->size;
-        this->max_capacity = arr->max_capacity;
+        for (size_t i = 0; i < arr.getSize(); i++) {
+            Object obj(*(arr.get(i)));
+            array[i] = &obj;
+        }
     }
 
     /**
@@ -413,11 +418,7 @@ class StringArray : public Object {
         StringArray() {
             str_arr = new Array();
         }
-
-        StringArray(StringArray& strarr) {
-            str_arr = new Array(strarr.str_arr);
-        }
-
+        
         /**
          * Initalized this array with the characteristics of the passed in array.
          * @arg arr Array containing values to be used in initialization. 
@@ -919,7 +920,7 @@ class FloatArray : public Object {
 
         virtual void set(float to_add, size_t index) {
             FloatObj* obj = new FloatObj(to_add);
-            return float_arr->set(obj, index);
+            float_arr->set(obj, index);
         }   
 
         /**
