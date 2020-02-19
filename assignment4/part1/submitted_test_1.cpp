@@ -34,13 +34,12 @@ void test() {
   Schema s2 = df2.get_schema();
 
   GT_EQUALS(df.get_int(0,0), 1);
-  GT_EQUALS(df.get_string(0,1), new String("Math"));
-  GT_EQUALS(df.get_float(0,2), float(96.69));
-  GT_TRUE(df.get_bool(0,3));
+  GT_TRUE(df.get_string(1,0)->equals(new String("Math")));
+  GT_TRUE(df.get_bool(3,0));
   GT_TRUE(s.length() == 2);
   GT_TRUE(s.width() == 4);
   GT_EQUALS(s2.col_idx("Grade"), 2);
-  GT_EQUALS(s2.col_name(3), "Attendace");
+  GT_TRUE(s2.col_name(3)->equals(new String("Attendance")));
   GT_EQUALS(s2.col_type(1), 'S');
   GT_TRUE(s2.length() == 0);
   GT_TRUE(s2.width() == 4);

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "dataframe.h" 
+#include "modified_dataframe.h" 
 
 #define GT_TRUE(a)   ASSERT_EQ((a),true)
 #define GT_FALSE(a)  ASSERT_EQ((a),false)
@@ -98,7 +98,7 @@ TEST(ColumnTest, column_methods_test){ ASSERT_EXIT_ZERO(column_methods_test); }
 
 void copying_dataframe_test() {
   Schema s("II");
-  DataFrame df(s);
+  ModifiedDataFrame df(s);
   Row  r(df.get_schema());
   for(size_t i = 0; i <  1000 * 1000; i++) {
     r.set(0,(int)i);
@@ -106,17 +106,17 @@ void copying_dataframe_test() {
     df.add_row(r);
   }
 
-  DataFrame df2(df);
+  ModifiedDataFrame df2(df);
   GT_TRUE(df2.nrows() == 0);
   GT_TRUE(df2.ncols() == 2);
   exit(0);
 }
 
-TEST(DataFrameTest, copying_dataframe_test){ ASSERT_EXIT_ZERO(copying_dataframe_test); }
+TEST(ModifiedDataFrameTest, copying_dataframe_test){ ASSERT_EXIT_ZERO(copying_dataframe_test); }
 
 void get_dataframe_test() {
   Schema s("IBS");
-  DataFrame df(s);
+  ModifiedDataFrame df(s);
   Row  r(df.get_schema());
   r.set(0,1);
   r.set(1, true);
@@ -140,11 +140,11 @@ void get_dataframe_test() {
   exit(0);
 }
 
-TEST(DataFrameTest, get_dataframe_test){ ASSERT_EXIT_ZERO(get_dataframe_test); }
+TEST(ModifiedDataFrameTest, get_dataframe_test){ ASSERT_EXIT_ZERO(get_dataframe_test); }
 
 void fill_row_dataframe_test() {
   Schema s("IBS");
-  DataFrame df(s);
+  ModifiedDataFrame df(s);
   Row  r(df.get_schema());
   r.set(0,1);
   r.set(1, true);
@@ -167,7 +167,7 @@ void fill_row_dataframe_test() {
   exit(0);
 }
 
-TEST(DataFrameTest, fill_row_dataframe_test){ ASSERT_EXIT_ZERO(fill_row_dataframe_test); }
+TEST(ModifiedDataFrameTest, fill_row_dataframe_test){ ASSERT_EXIT_ZERO(fill_row_dataframe_test); }
 
 
 void schema_test() {
@@ -214,7 +214,7 @@ TEST(RowTest, row_test){ ASSERT_EXIT_ZERO(row_test); }
 
 void rower_filter_dataframe_test() {
   Schema s("IBB");
-  DataFrame df(s);
+  ModifiedDataFrame df(s);
   Row  r(df.get_schema());
   r.set(0,1);
   r.set(1, false);
@@ -230,7 +230,7 @@ void rower_filter_dataframe_test() {
   df.add_row(r);
 
   OnlyTrueRower rower;
-  DataFrame* df2 = df.filter(rower);
+  ModifiedDataFrame* df2 = df.filter(rower);
 
   GT_TRUE(df2->get_int(0, 0) == df.get_int(0, 1));
   GT_TRUE(df2->nrows() == 1);
@@ -239,7 +239,7 @@ void rower_filter_dataframe_test() {
   exit(0);
 }
 
-TEST(DataFrameTest, rower_filter_dataframe_test){ ASSERT_EXIT_ZERO(rower_filter_dataframe_test); }
+TEST(ModifiedDataFrameTest, rower_filter_dataframe_test){ ASSERT_EXIT_ZERO(rower_filter_dataframe_test); }
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

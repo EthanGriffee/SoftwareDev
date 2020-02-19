@@ -82,6 +82,9 @@ class Column : public Object {
     else if (this->as_bool()) {
       return 'B';
     }
+    else {
+      exit(1);
+    }
   }
 };
  
