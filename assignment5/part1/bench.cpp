@@ -222,5 +222,5 @@ void df_to_string_array_testmap_tenth_rows() {
 
 
 int main(int argc, char **argv) {
-    really_dumb_testmap_half_rows();
+    really_dumb_testpmap();
 }
