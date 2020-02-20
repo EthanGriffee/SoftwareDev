@@ -430,13 +430,13 @@ public:
  */
 class Row : public Object {
  public:
-  Schema* scm;
+  Schema scm;
   size_t row_idx_;
   Array* row_;
  
   /** Build a row following a schema. */
   Row(Schema& scm) {
-    this->scm = &scm;
+    this->scm = scm;
     row_idx_ = 0;
     row_ = new Array();
   }
@@ -532,7 +532,7 @@ class Row : public Object {
  
    /** Type of the field at the given position. An idx >= width is  undefined. */
   char col_type(size_t idx) {
-    return  scm->col_type(idx);
+    return  scm.col_type(idx);
   }
  
   /** Given a Fielder, visit every field of this row. The first argument is

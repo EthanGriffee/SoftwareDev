@@ -55,7 +55,6 @@ class GetAllStringsRower : public Rower {
 
   virtual bool accept(Row& r) {
     for (int x = 0; x < 10000; x++) {
-        sum += 1;
     }
     return true;
   }
@@ -70,15 +69,16 @@ class GetAllStringsRower : public Rower {
       is reponsible for cleaning up memory. */
   virtual void join_delete(Rower* other) {
       ReallyDumbRower* r = dynamic_cast<ReallyDumbRower*> (other);
-      if (other)
-        sum = sum + r->getSum();
+      if (other) {
+
+      }
       else {
         exit(1);
       }
   }
 
-  size_t getSum() {
-    return sum;
+  StringArray* getArray() {
+    return str_array;
   }
 };
 
