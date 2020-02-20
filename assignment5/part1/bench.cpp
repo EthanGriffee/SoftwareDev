@@ -54,13 +54,17 @@ class GetAllStringsRower : public Rower {
     GetAllStringsRower() { str_array = new StringArray();}
 
   virtual bool accept(Row& r) {
-    for (int x = 0; x < 10000; x++) {
+    for (int x = 0; x < r.width(); x++) {
+      if (r.col_type(x) == 'S') {
+        str_array->add(r.get_string(x));
+        return true;
+      }
     }
     return true;
   }
 
-  virtual ReallyDumbRower* clone() {
-      return new ReallyDumbRower();
+  virtual GetAllStringsRower* clone() {
+      return new GetAllStringsRower();
   }
  
   /** Once traversal of the data frame is complete the rowers that were
@@ -68,9 +72,9 @@ class GetAllStringsRower : public Rower {
       original object will be the last to be called join on. The join method
       is reponsible for cleaning up memory. */
   virtual void join_delete(Rower* other) {
-      ReallyDumbRower* r = dynamic_cast<ReallyDumbRower*> (other);
+      GetAllStringsRower* r = dynamic_cast<GetAllStringsRower*> (other);
       if (other) {
-
+        str_array->addAll(r->getArray());
       }
       else {
         exit(1);
@@ -157,6 +161,63 @@ void really_dumb_testmap_tenth_rows() {
   ReallyDumbRower rower = ReallyDumbRower();
   df->map(rower);
   sys.p(rower.getSum());
+}
+
+
+
+
+void df_to_string_array_testpmap() {
+  Sys sys;
+  ModifiedDataFrame* df;
+  df = create_dataframe_from_file(1);
+  GetAllStringsRower rower = GetAllStringsRower();
+  df->pmap(rower);
+  sys.p(rower.getArray()->getSize());
+}
+
+void df_to_string_array_testmap() {
+  Sys sys;
+  ModifiedDataFrame* df;
+  df = create_dataframe_from_file(1);
+  GetAllStringsRower rower = GetAllStringsRower();
+  df->map(rower);
+  sys.p(rower.getArray()->getSize());
+}
+
+void df_to_string_array_testpmap_half_rows() {
+  Sys sys;
+  ModifiedDataFrame* df;
+  df = create_dataframe_from_file(2);
+  GetAllStringsRower rower = GetAllStringsRower();
+  df->pmap(rower);
+  sys.p(rower.getArray()->getSize());
+}
+
+void df_to_string_array_testmap_half_rows() {
+  Sys sys;
+  ModifiedDataFrame* df;
+  df = create_dataframe_from_file(2);
+  GetAllStringsRower rower = GetAllStringsRower();
+  df->map(rower);
+  sys.p(rower.getArray()->getSize());
+}
+
+void df_to_string_array_testpmap_tenth_rows() {
+  Sys sys;
+  ModifiedDataFrame* df;
+  df = create_dataframe_from_file(10);
+  GetAllStringsRower rower = GetAllStringsRower();
+  df->pmap(rower);
+  sys.p(rower.getArray()->getSize());
+}
+
+void df_to_string_array_testmap_tenth_rows() {
+  Sys sys;
+  ModifiedDataFrame* df;
+  df = create_dataframe_from_file(10);
+  GetAllStringsRower rower = GetAllStringsRower();
+  df->map(rower);
+  sys.p(rower.getArray()->getSize());
 }
 
 

@@ -430,13 +430,13 @@ public:
  */
 class Row : public Object {
  public:
-  Schema scm;
+  Schema* scm;
   size_t row_idx_;
   Array* row_;
  
   /** Build a row following a schema. */
   Row(Schema& scm) {
-    this->scm = scm;
+    this->scm = &scm;
     row_idx_ = 0;
     row_ = new Array();
   }
@@ -532,7 +532,7 @@ class Row : public Object {
  
    /** Type of the field at the given position. An idx >= width is  undefined. */
   char col_type(size_t idx) {
-    return  scm.col_type(idx);
+    return  scm->col_type(idx);
   }
  
   /** Given a Fielder, visit every field of this row. The first argument is
@@ -788,19 +788,19 @@ class Rower : public Object {
  */
 class DataFrame : public Object {
  public:
-  Schema* scm;
+  Schema scm;
   ColumnArray* columns_;
   RowArray* row_arr_;
  
   /** Create a data frame with the same columns as the given df but with no rows or rownmaes */
   DataFrame(DataFrame& df) {
-    scm = new Schema();
+    Schema scm("");
     Schema scmCoppying = df.get_schema();
     row_arr_ = new RowArray();
     columns_ = new ColumnArray();
     for (int i = 0; i < df.ncols(); i++) {
       char col_type = scmCoppying.col_type(i);
-      scm->add_column(col_type, scmCoppying.col_name(i));
+      scm.add_column(col_type, scmCoppying.col_name(i));
       switch(col_type) {
         case 'F':
           columns_->add(new FloatColumn());
@@ -821,11 +821,11 @@ class DataFrame : public Object {
   /** Create a data frame from a schema and columns. All columns are created
     * empty. */
   DataFrame(Schema& schema) {
-    scm = &schema;
+    scm = schema;
     columns_ = new ColumnArray();
     row_arr_ = new RowArray();
-    for (int i = 0; i < scm->width(); i++) {
-      switch(scm->col_type(i)) {
+    for (int i = 0; i < scm.width(); i++) {
+      switch(scm.col_type(i)) {
         case 'F':
           columns_->add(new FloatColumn());
           break;
@@ -845,7 +845,7 @@ class DataFrame : public Object {
   /** Returns the dataframe's schema. Modifying the schema after a dataframe
     * has been created in undefined. */
   Schema& get_schema() {
-    return *scm;
+    return scm;
   }
  
   /** Adds a column this dataframe, updates the schema, the new column
@@ -853,10 +853,10 @@ class DataFrame : public Object {
     * name is optional and external. A nullptr colum is undefined. */
   void add_column(Column* col, String* name) {
     while (row_arr_->getSize() < col->size()) {
-      row_arr_->add(new Row(*scm));
+      row_arr_->add(new Row(scm));
     }
     if (row_arr_->getSize() == col->size()) {
-      scm->add_column(col->get_type(), name);
+      scm.add_column(col->get_type(), name);
       for (int x = 0; x < col->size(); x++) {
         switch (col->get_type()) {
           case 'F':
@@ -903,13 +903,13 @@ class DataFrame : public Object {
   /** Return the offset of the given column name or -1 if no such col. */
   int get_col(String& col) {
     const char* c = col.c_str();
-    return scm->col_idx(c);
+    return scm.col_idx(c);
   }
  
   /** Return the offset of the given row name or -1 if no such row. */
   int get_row(String& row) {
     const char* c = row.c_str();
-    return scm->col_idx(c);
+    return scm.col_idx(c);
   }
  
   /** Set the value at the given column and row to the given value.
@@ -1016,7 +1016,7 @@ class DataFrame : public Object {
   /** Create a new dataframe, constructed from rows for which the given Rower
     * returned true from its accept method. */
   DataFrame* filter(Rower& r) {
-    DataFrame* n = new DataFrame(*scm);
+    DataFrame* n = new DataFrame(scm);
     for (int i = 0; i < nrows(); i++) {
       Row row = *row_arr_->get(i);
       if (r.accept(row)) {
@@ -1034,10 +1034,10 @@ class DataFrame : public Object {
     Sys system;
     PrintFielder pfielder = PrintFielder(row_arr_);
     for (int i = 0; i < ncols(); i++) {
-      system.p(scm->col_name(i));
+      system.p(scm.col_name(i));
     }
     for (int i = 0; i < nrows(); i++) {
-      system.p(scm->row_name(i));
+      system.p(scm.row_name(i));
       row_arr_->get(i)->visit(i, pfielder);
     }
   }
