@@ -178,7 +178,7 @@ public:
     virtual void resize() {
         max_capacity = max_capacity * 2;
         Object** new_array = new Object*[max_capacity];
-        for (int x = 0; x < size; x++) {
+        for (size_t x = 0; x < size; x++) {
             new_array[x] = array[x];
         }
         delete[] array;
@@ -252,7 +252,7 @@ public:
             resize();
         }
         size += 1;
-        for (int x = size; x > index; x--){
+        for (size_t x = size; x > index; x--){
             array[x] = array[x - 1];
         }
         array[index] = to_add;
@@ -292,10 +292,10 @@ public:
             resize();
         }
         size += add_length;
-        for (int x = size - 1; x >= index + add_length; x--){
+        for (size_t x = size - 1; x >= index + add_length; x--){
             array[x] = array[x - add_length];
         }
-        for (int x = 0; x < add_length; x++){
+        for (size_t x = 0; x < add_length; x++){
             array[index + x] = to_add->get(x);
         }
     }
@@ -338,7 +338,7 @@ public:
         for (size_t i = 0; i < size; i ++) {
             if (this->get(i)->equals(to_remove)) {
                 size -= 1;
-                for (int x = i; x < size; x++) {
+                for (size_t x = i; x < size; x++) {
                     array[x] = array[x + 1];
                 }
                 return;
