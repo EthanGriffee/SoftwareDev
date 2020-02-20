@@ -7,16 +7,16 @@
 class DataFrameThreadOne: public Thread {
   public:
     DataFrame* dataframe;
-    Rower r;
+    Rower* r;
 
-    DataFrameThreadOne(DataFrame* mod, Rower& row) {
+    DataFrameThreadOne(DataFrame* mod, Rower* row) {
       dataframe = mod;
       r = row;
     } 
 
     virtual void run() {
       for (int i = 0; i < dataframe->nrows() / 2; i++) {
-            r.accept(*dataframe->row_arr_->get(i));
+            r->accept(*dataframe->row_arr_->get(i));
         }
 
     }
@@ -50,7 +50,7 @@ class ModifiedDataFrame : public DataFrame {
          * used at the end to merge the results. */
         void pmap(Rower& r) {
             Rower* r2 = static_cast<Rower*>(r.clone());
-            DataFrameThreadOne x(this, r);
+            DataFrameThreadOne x(this, &r);
             DataFrameThreadTwo x2(this, r2);
 
             x.start();

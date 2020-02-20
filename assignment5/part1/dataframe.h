@@ -5,269 +5,13 @@
 #include "array.h"
 #include "helper.h"
 #include "map.h"
+#include "column.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-class BoolColumn;
-class FloatColumn;
-class StringColumn;
-class IntColumn;
 class RowArray;
 class ColumnArray;
-
-
-/**************************************************************************
- * Column ::
- * Represents one column of a data frame which holds values of a single type.
- * This abstract class defines methods overriden in subclasses. There is
- * one subclass per element type. Columns are mutable, equality is pointer
- * equality. */
-
-class Column : public Object {
- public:
- 
-  /** Type converters: Return same column under its actual type, or
-   *  nullptr if of the wrong type.  */
-  virtual IntColumn* as_int() {
-      return nullptr;
-  }
-
-  virtual BoolColumn*  as_bool(){
-      return nullptr;
-  }
-
-  virtual FloatColumn* as_float(){
-      return nullptr;
-  }
-
-  virtual StringColumn* as_string(){
-      return nullptr;
-  }
- 
-  /** Type appropriate push_back methods. Calling the wrong method is
-    * undefined behavior. **/
-  virtual void push_back(int val) {
-    return;
-  }
-
-  virtual void push_back(bool val) {
-    return;
-  }
-
-  virtual void push_back(float val) {
-    return;
-  }
-
-  virtual void push_back(String* val) {
-    return;
-  }
- 
- /** Returns the number of elements in the column. */
-  virtual size_t size() {
-    return 0;
-  }
- 
-  /** Return the type of this column as a char: 'S', 'B', 'I' and 'F'. */
-  char get_type() {
-    if (this->as_string()) {
-      return 'S';
-    }
-    else if (this->as_float()) {
-      return 'F';
-    }
-    else if (this->as_int()) {
-      return 'I';
-    }
-    else if (this->as_bool()) {
-      return 'B';
-    }
-    else {
-      exit(1);
-    }
-  }
-};
- 
-/*************************************************************************
- * IntColumn::
- * Holds int values.
- */
-class IntColumn : public Column {
- public:
-  IntArray* arr_;
-
-  IntColumn() {
-    arr_ = new IntArray();
-  }
-
-  IntColumn(int n, ...) {
-    va_list valist;
-    int num;
-    va_start(valist, num);
-    for (int i = 0; i < num; i++) {
-      arr_->add(va_arg(valist, int));
-    }
-    va_end(valist);
-  }
-
-  int get(size_t idx) {
-    return arr_->get(idx);
-  }
-
-  IntColumn* as_int() {
-    return this;
-  }
-
-  /** Set value at idx. An out of bound idx is undefined.  */
-  void set(size_t idx, int val) {
-    return arr_->set(val, idx);
-  }
-
-  virtual void push_back(int val) {
-    arr_->add(val);
-  }
-
-
-  size_t size() {
-    return arr_->getSize();
-  }
-};
- 
-// Other primitive column classes similar...
- 
-/*************************************************************************
- * StringColumn::
- * Holds string pointers. The strings are external.  Nullptr is a valid
- * value.
- */
-class StringColumn : public Column {
- public:
-  StringArray* arr_;
-  StringColumn() {
-    arr_ = new StringArray();
-  }
-
-  StringColumn(String* n, ...) {
-    va_list valist;
-    int num;
-    va_start(valist, num);
-    for (int i = 0; i < num; i++) {
-      arr_->add(va_arg(valist, String*));
-    }
-    va_end(valist);
-  }
-
-  StringColumn* as_string() {
-    return this;
-  }
-
-  /** Returns the string at idx; undefined on invalid idx.*/
-  String* get(size_t idx)  {
-    return arr_->get(idx);
-  }
-
-  /** Out of bound idx is undefined. */
-  void set(size_t idx, String* val) {
-    return arr_->set(val, idx);
-  }
-
-  virtual void push_back(String* val) {
-    arr_->add(val);
-  }
-
-  size_t size() {
-    return arr_->getSize();
-  }
-};
-
-/*************************************************************************
- * BoolColumn::
- * Holds bool values.
- */
-class BoolColumn : public Column {
- public:
-  BoolArray* arr_;
-  BoolColumn() {
-    arr_ = new BoolArray();
-  }
-
-  BoolColumn(bool b, ...) {
-    va_list valist;
-    int num;
-    va_start(valist, num);
-    for (int i = 0; i < num; i++) {
-      arr_->add(va_arg(valist, bool));
-    }
-    va_end(valist);
-  }
-
-  BoolColumn* as_bool() {
-    return this;
-  }
-
-  /** Returns the string at idx; undefined on invalid idx.*/
-  bool get(size_t idx)  {
-    return arr_->get(idx);
-  }
-
-  /** Out of bound idx is undefined. */
-  void set(size_t idx, bool val) {
-    return arr_->set(val, idx);
-  }
-
-  virtual void push_back(bool val) {
-    arr_->add(val);
-  }
-
-  size_t size() {
-    return arr_->getSize();
-  }
-};
-
-/*************************************************************************
- * FloatColumn::
- * Holds float values.
- */
-class FloatColumn : public Column {
- public:
-  FloatArray* arr_;
-  FloatColumn() {
-    arr_ = new FloatArray();
-  }
-
-  FloatColumn(bool b, ...) {
-    va_list valist;
-    int num;
-    va_start(valist, num);
-    for (int i = 0; i < num; i++) {
-      arr_->add(va_arg(valist, bool));
-    }
-    va_end(valist);
-  }
-
-  FloatColumn* as_float() {
-    return this;
-  }
-
-  /** Returns the string at idx; undefined on invalid idx.*/
-  bool get(size_t idx)  {
-    return arr_->get(idx);
-  }
-
-  /** Out of bound idx is undefined. */
-  void set(size_t idx, bool val) {
-    return arr_->set(val, idx);
-  }
-
-  virtual void push_back(float val) {
-    arr_->add(val);
-  }
-
-  size_t size() {
-    return arr_->getSize();
-  }
-};
-
 
 /**
  * Incomplete implementation of Column Array. No methods overriden from
@@ -686,13 +430,13 @@ public:
  */
 class Row : public Object {
  public:
-  Schema* scm;
+  Schema scm;
   size_t row_idx_;
   Array* row_;
  
   /** Build a row following a schema. */
   Row(Schema& scm) {
-    this->scm = &scm;
+    this->scm = scm;
     row_idx_ = 0;
     row_ = new Array();
   }
@@ -788,7 +532,7 @@ class Row : public Object {
  
    /** Type of the field at the given position. An idx >= width is  undefined. */
   char col_type(size_t idx) {
-    return  scm->col_type(idx);
+    return  scm.col_type(idx);
   }
  
   /** Given a Fielder, visit every field of this row. The first argument is
@@ -1108,8 +852,33 @@ class DataFrame : public Object {
     * is external, and appears as the last column of the dataframe, the
     * name is optional and external. A nullptr colum is undefined. */
   void add_column(Column* col, String* name) {
-    scm->add_column(col->get_type(), name);
+    while (row_arr_->getSize() < col->size()) {
+      row_arr_->add(new Row(*scm));
+    }
+    if (row_arr_->getSize() == col->size()) {
+      scm->add_column(col->get_type(), name);
+      for (int x = 0; x < col->size(); x++) {
+        switch (col->get_type()) {
+          case 'F':
+            row_arr_->get(x)->set(ncols(), col->as_float()->get(x));
+            break;
+          case 'I':
+            row_arr_->get(x)->set(ncols(), col->as_int()->get(x));
+            break;
+          case 'S':
+            row_arr_->get(x)->set(ncols(), col->as_string()->get(x));
+            break;
+          case 'B':
+            row_arr_->get(x)->set(ncols(), col->as_bool()->get(x));
+            break;
+        }
+      }
     columns_->add(col);
+    }
+    else {
+      perror("Tried adding a column without enough rows");
+      exit(1);
+    }
   }
  
   /** Return the value at the given column and row. Accessing rows or

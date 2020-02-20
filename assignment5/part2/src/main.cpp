@@ -20,7 +20,7 @@ int main(int argh, char** argv)
         // handles everything else
     }
 
-    l = gethostbyname()
+    l = gethostbyname(input_ip);
 
 
 
