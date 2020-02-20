@@ -1,0 +1,2 @@
+ARRAYSPECREPO = https://github.com/LalBirali/A1P2.git
+ARRAYSPECHASH = 9ac5e42045a73a8e80902acb35199bfed69537c7
