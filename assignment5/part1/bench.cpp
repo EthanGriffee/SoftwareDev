@@ -161,5 +161,5 @@ void really_dumb_testmap_tenth_rows() {
 
 
 int main(int argc, char **argv) {
-    really_dumb_testpmap();
+    really_dumb_testmap_half_rows();
 }
