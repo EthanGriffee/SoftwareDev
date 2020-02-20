@@ -1,11 +1,4 @@
-#include "modified_dataframe.h" 
-#include <gtest/gtest.h>
-
-#define GT_TRUE(a)   ASSERT_EQ((a),true)
-#define GT_FALSE(a)  ASSERT_EQ((a),false)
-#define GT_EQUALS(a, b)   ASSERT_EQ(a, b)
-#define ASSERT_EXIT_ZERO(a)  \
-  ASSERT_EXIT(a(), ::testing::ExitedWithCode(0), ".*")
+#include "modified_dataframe.h"
 
 /*******************************************************************************
  *  Rower::
@@ -13,16 +6,19 @@
  */
 class ReallyDumbRower : public Rower {
  public:
-    int sum;
+    size_t sum;
 
     ReallyDumbRower() { sum = 0;}
 
   virtual bool accept(Row& r) {
-    int sum = 0;
-    for (int x = 0; x < 10000000; x++) {
+    for (int x = 0; x < 10000; x++) {
         sum += 1;
     }
     return true;
+  }
+
+  virtual ReallyDumbRower* clone() {
+      return new ReallyDumbRower();
   }
  
   /** Once traversal of the data frame is complete the rowers that were
@@ -31,13 +27,18 @@ class ReallyDumbRower : public Rower {
       is reponsible for cleaning up memory. */
   virtual void join_delete(Rower* other) {
       ReallyDumbRower* r = dynamic_cast<ReallyDumbRower*> (other);
-      Sys s;
-      s.p(this->sum + r->sum);
+      if (other)
+        sum = sum + r->sum;
+  }
+
+  size_t getSum() {
+    return sum;
   }
 };
 
 
 void really_dumb_testpmap() {
+    Sys sys;
     Schema s("II");
 
   ModifiedDataFrame df(s);
@@ -47,14 +48,15 @@ void really_dumb_testpmap() {
     r.set(1,(int)i+1);
     df.add_row(r);
   }
-  GT_EQUALS(df.get_int((size_t)0,1), 1);
+  sys.t_true(df.get_int((size_t)0,1) == 1);
   ReallyDumbRower rower = ReallyDumbRower();
   df.pmap(rower);
+  sys.p(rower.getSum());
 }
-TEST(PmapTest, really_dumb_testpmap){ ASSERT_EXIT_ZERO(really_dumb_testpmap); }
 
 void really_dumb_testmap() {
-    Schema s("II");
+    Sys sys;
+  Schema s("II");
 
   ModifiedDataFrame df(s);
   Row  r(df.get_schema());
@@ -63,15 +65,13 @@ void really_dumb_testmap() {
     r.set(1,(int)i+1);
     df.add_row(r);
   }
-  GT_EQUALS(df.get_int((size_t)0,1), 1);
+  sys.t_true(df.get_int((size_t)0,1) == 1);
   ReallyDumbRower rower = ReallyDumbRower();
   df.map(rower);
+  sys.p(rower.getSum());
 }
-
-TEST(mapTest, really_dumb_testmap){ ASSERT_EXIT_ZERO(really_dumb_testmap); }
 
 
 int main(int argc, char **argv) {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    really_dumb_testmap();
 }
