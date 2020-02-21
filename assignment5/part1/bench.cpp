@@ -253,5 +253,5 @@ void df_to_string_array_testmap_tenth_rows() {
 
 
 int main(int argc, char **argv) {
-    df_to_string_array_testpmap_half_rows();
+    df_to_string_array_testpmap_tenth_rows();
 }
