@@ -1,5 +1,4 @@
-#include <iostream>
-
+#include "network.h"
 
 int main(int argh, char** argv)
 {
@@ -19,9 +18,14 @@ int main(int argh, char** argv)
         }
         // handles everything else
     }
+    else {
+        exit(1);
+    }
 
-    l = gethostbyname(input_ip);
+    Client* c = new Client(input_ip);
+    c->waitForMessage();
 
+    
 
 
 }

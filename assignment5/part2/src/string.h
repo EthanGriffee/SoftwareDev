@@ -1,103 +1,126 @@
 #pragma once
+// LANGUAGE: CwC
+#include <cstring>
+#include <string>
+#include <cassert>
+#include "object.h"
 
-#include <string.h> //also called cstring
-#include "object.h" 
-
-// String class
+/** An immutable string class that wraps a character array.
+ * The character array is zero terminated. The size() of the
+ * String does count the terminator character. Most operations
+ * work by copy, but there are exceptions (this is mostly to support
+ * large strings and avoid them being copied).
+ *  author: vitekj@me.com */
 class String : public Object {
-    public:
-        char *str_;
-        size_t size_;
+public:
+    size_t size_; // number of characters excluding terminate (\0)
+    char *cstr_;  // owned; char array
 
-        String() : Object() {
-            str_ = new char[1];
-            str_[0] = '\0';
-            size_ = 1;
-        }
+    /** Build a string from a string constant */
+    String(char const* cstr, size_t len) {
+       size_ = len;
+       cstr_ = new char[size_ + 1];
+       memcpy(cstr_, cstr, size_ + 1);
+       cstr_[size_] = 0; // terminate
+    }
+    /** Builds a string from a char*, steal must be true, we do not copy!
+     *  cstr must be allocated for len+1 and must be zero terminated. */
+    String(bool steal, char* cstr, size_t len) {
+        assert(steal && cstr[len]==0);
+        size_ = len;
+        cstr_ = cstr;
+    }
 
-        String(const char* str) : Object() {
-            size_ = strlen(str);
-            str_ = new char[size_ + 1];
+    String(char const* cstr) : String(cstr, strlen(cstr)) {}
 
-            strcpy(str_, str);
-        }
+    /** Build a string from another String */
+    String(String & from):
+        Object(from) {
+        size_ = from.size_;
+        cstr_ = new char[size_ + 1]; // ensure that we copy the terminator
+        memcpy(cstr_, from.cstr_, size_ + 1);
+    }
 
-        // returns the length of the string
-        size_t length() {
-            return size_;
-        }
+    /** Delete the string */
+    ~String() { delete[] cstr_; }
+    
+    /** Return the number characters in the string (does not count the terminator) */
+    size_t size() { return size_; }
+    
+    /** Return the raw char*. The result should not be modified or freed. */
+    char* c_str() {  return cstr_; }
+    
+    /** Returns the character at index */
+    char at(size_t index) {
+        assert(index < size_);
+        return cstr_[index];
+    }
+    
+    /** Compare two strings. */
+    bool equals(Object* other) {
+        if (other == this) return true;
+        String* x = dynamic_cast<String *>(other);
+        if (x == nullptr) return false;
+        if (size_ != x->size_) return false;
+        return strncmp(cstr_, x->cstr_, size_) == 0;
+    }
+    
+    /** Deep copy of this string */
+    String * clone() { return new String(*this); }
 
-        // hashes the string
-        size_t hash() {
-            size_t res = 0;
-            for (int i = 0; i < size_; i++) {
-                res += str_[i];
-            }
-            return res;
-        }
+    /** This consumes cstr_, the String must be deleted next */
+    char * steal() {
+        char *res = cstr_;
+        cstr_ = nullptr;
+        return res;
+    }
 
-        // returns a new string combining this string with s
-        String* concat(String* s) {
-            char* str = new char[size_ + s->size_ - 1];
-            strcpy(str, str_);
-            strcat(str, s->str_);
-            return new String(str);
-        }
+    /** Compute a hash for this string. */
+    size_t hash_me() {
+        size_t hash = 0;
+        for (size_t i = 0; i < size_; ++i)
+            hash = cstr_[i] + (hash << 6) + (hash << 16) - hash;
+        return hash;
+    }
+ };
 
-        // returns positive number if the ascii values > ascii values of s
-        int compare(String* s) {
-            for (size_t x = 0; x < size_; x++) {
-                if (str_[x] != s->str_[x]) {
-                    return str_[x] - s->str_[x];
-                }
-            }
-            return str_[size_] - s->str_[size_];
-        }
+/** A string buffer builds a string from various pieces.
+ *  author: jv */
+class StrBuff : public Object {
+public:
+    char *val_; // owned; consumed by get()
+    size_t capacity_;
+    size_t size_;
 
-        // returns true if other is a string * and the characters in str_ are the 
-        // same as the characters in other->str_
-        bool equals(Object *other){
-            String* t = dynamic_cast<String*>(other);
-            if (t && size_ == t->size_) {
-                for (int x = 0; x < size_; x++) {
-                    if (str_[x] != t->str_[x]) {
-                        return false;
-                    }
-                }
-            }
-            else {
-                return false;
-            }
-            return true;
-        }
+    StrBuff() {
+        val_ = new char[capacity_ = 10];
+        size_ = 0;
+    }
+    void grow_by_(size_t step) {
+        if (step + size_ < capacity_) return;
+        capacity_ *= 2;
+        if (step + size_ >= capacity_) capacity_ += step;        
+        char* oldV = val_;
+        val_ = new char[capacity_];
+        memcpy(val_, oldV, size_);
+        delete[] oldV;
+    }
+    StrBuff& c(const char* str) {
+        size_t step = strlen(str);
+        grow_by_(step);
+        memcpy(val_+size_, str, step);
+        size_ += step;
+        return *this;
+    }
+    StrBuff& c(String &s) { return c(s.c_str());  }
+    StrBuff& c(size_t v) { return c(std::to_string(v).c_str());  } // Cpp
 
-        virtual ~String() {
-            delete str_;
-        }
-};
-
-class StringCount: public String{
-    public:
-        size_t count_;
-
-        StringCount(const char* str, size_t count) : String(str) {
-            count_ = count;
-        }
-
-        void incriment() {
-            count_ += 1;
-        }
-
-        size_t count() {
-            return count_;
-        }
-
-        int compare(StringCount* s) {
-            if (this->count() == s->count()) {
-                return 0;
-            }
-            else {
-                return s->count() - this->count();
-            }
-        }
+    String* get() {
+        assert(val_ != nullptr); // can be called only once
+        grow_by_(1);     // ensure space for terminator
+        val_[size_] = 0; // terminate
+        String *res = new String(true, val_, size_);
+        val_ = nullptr; // val_ was consumed above
+        return res;
+    }
 };
