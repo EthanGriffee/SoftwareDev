@@ -141,25 +141,20 @@ ModifiedDataFrame* create_dataframe_from_file(size_t factor) {
 }
 
 void really_dumb_testpmap() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(1);
   ReallyDumbRower rower = ReallyDumbRower();
   df->pmap(rower);
-  sys.p(rower.getSum());
 }
 
 void really_dumb_testmap() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(1);
   ReallyDumbRower rower = ReallyDumbRower();
   df->map(rower);
-  sys.p(rower.getSum());
 }
 
 void really_dumb_testpmap_half_rows() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(2);
   ReallyDumbRower rower = ReallyDumbRower();
@@ -168,46 +163,37 @@ void really_dumb_testpmap_half_rows() {
 }
 
 void really_dumb_testmap_half_rows() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(2);
   ReallyDumbRower rower = ReallyDumbRower();
   df->map(rower);
-  sys.p(rower.getSum());
 }
 
 void really_dumb_testpmap_tenth_rows() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(10);
   ReallyDumbRower rower = ReallyDumbRower();
   df->pmap(rower);
-  sys.p(rower.getSum());
 }
 
 void really_dumb_testmap_tenth_rows() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(10);
   ReallyDumbRower rower = ReallyDumbRower();
   df->map(rower);
-  sys.p(rower.getSum());
 }
 
 
 
 
 void df_to_string_array_testpmap() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(1);
   FieldsToArraysRower rower = FieldsToArraysRower();
   df->pmap(rower);
-  sys.p(rower.getStringArray()->getSize());
 }
 
 void df_to_string_array_testmap() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(1);
   FieldsToArraysRower rower = FieldsToArraysRower();
@@ -216,42 +202,85 @@ void df_to_string_array_testmap() {
 }
 
 void df_to_string_array_testpmap_half_rows() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(2);
   FieldsToArraysRower rower = FieldsToArraysRower();
   df->pmap(rower);
-  sys.p(rower.getStringArray()->getSize());
 }
 
 void df_to_string_array_testmap_half_rows() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(2);
   FieldsToArraysRower rower = FieldsToArraysRower();
   df->map(rower);
-  sys.p(rower.getStringArray()->getSize());
 }
 
 void df_to_string_array_testpmap_tenth_rows() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(10);
   FieldsToArraysRower rower = FieldsToArraysRower();
   df->pmap(rower);
-  sys.p(rower.getStringArray()->getSize());
 }
 
 void df_to_string_array_testmap_tenth_rows() {
-  Sys sys;
   ModifiedDataFrame* df;
   df = create_dataframe_from_file(10);
   FieldsToArraysRower rower = FieldsToArraysRower();
   df->map(rower);
-  sys.p(rower.getStringArray()->getSize());
 }
 
 
 int main(int argc, char **argv) {
-    df_to_string_array_testpmap();
+
+  switch(atoi(argv[1])) {
+    case 1: {
+      really_dumb_testmap();
+      break;
+    }
+    case 2: {
+      really_dumb_testpmap();
+      break;
+    }
+    case 3: {
+      really_dumb_testmap_half_rows();
+      break;
+    }
+    case 4: {
+      really_dumb_testpmap_half_rows();
+      break;
+    }
+    case 5: {
+      really_dumb_testmap_tenth_rows();
+      break;
+    }
+    case 6: {
+      really_dumb_testpmap_tenth_rows();
+      break;
+    } 
+    case 7: {
+      df_to_string_array_testmap();
+      break;
+    }
+    case 8: {
+      df_to_string_array_testpmap();
+      break;
+    }
+    case 9: {
+      df_to_string_array_testmap_half_rows();
+      break;
+    }
+    case 10: {
+      df_to_string_array_testpmap_half_rows();
+      break;
+    }
+    case 11: {
+      df_to_string_array_testmap_tenth_rows();
+      break;
+    }
+    case 12: {
+      df_to_string_array_testpmap_tenth_rows();
+      break;
+    }
+
+  }
 }

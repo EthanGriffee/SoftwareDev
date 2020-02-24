@@ -50,13 +50,13 @@ class ModifiedDataFrame : public DataFrame {
          * used at the end to merge the results. */
         void pmap(Rower& r) {
             Rower* r2 = static_cast<Rower*>(r.clone());
-            DataFrameThreadOne x(this, &r);
-            DataFrameThreadTwo x2(this, r2);
+            DataFrameThreadOne t(this, &r);
+            DataFrameThreadTwo t2(this, r2);
 
-            x.start();
-            x2.start();
-            x.join();
-            x2.join();
+            t.start();
+            t2.start();
+            t.join();
+            t2.join();
             r.join_delete(r2);
         }
 };

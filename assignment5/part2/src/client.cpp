@@ -22,10 +22,11 @@ int main(int argh, char** argv)
         exit(1);
     }
 
-    Client* c = new Client(input_ip);
-    c->waitForMessage();
+    ThreadedClient* c = new ThreadedClient(input_ip);
+    c->composeMessage("127.0.0.2", "HU FIREND");
+    c->readMessages();
 
-    
-
-
+    sleep(5);
+    c->p("closing");
+    c->closeSocket();
 }
