@@ -12,10 +12,12 @@
 #include <string.h>
 #include "thread.h"
 #include "map.h"
+#include "directory.h"
 
 class Server : public Object {
     public:
         Map* ips_to_ints;
+        Directory dir;
         IntArray* sockets;
         StringArray* ips;
         int server_fd;
@@ -33,7 +35,7 @@ class Server : public Object {
             assert(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) != 0);
             serv.sin_family = AF_INET;
             serv.sin_port = htons(port);
-            //serv.sin_addr.s_addr = INADDR_ANY;
+
             // Convert IP addresses from text to binary form
             assert(inet_pton(AF_INET, input_ip, &serv.sin_addr)>0);
             assert(bind(server_fd, (struct sockaddr *)&serv, sizeof(serv)) >= 0);
@@ -73,7 +75,6 @@ class ServerReadListener : public Thread {
             while(true) {
                 //clear the socket set  
                 FD_ZERO(&readfds);
-                int addrlen = sizeof(s->serv);
                 int max_clients = s->sockets->getSize();
             
                 //add master socket to set  
@@ -110,23 +111,14 @@ class ServerReadListener : public Thread {
                 if (FD_ISSET(s->server_fd, &readfds))   
                 {   
                     int new_socket;
-                    assert((new_socket = accept(s->server_fd, (struct sockaddr *)&s->serv, (socklen_t*)&addrlen)) >= 0);
+                    sockaddr_in addr;
+                    int addrlen = sizeof(addr);
+                    assert((new_socket = accept(s->server_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen)) >= 0);
                     s->sockets->add(new_socket);
                     char* count = new char[32];
-                    StrBuff message;
-                    message.p("TEST : ");
-                    message.p(getsockname(new_socket, (struct sockaddr*)&s->serv, (socklen_t*)&addrlen));
-                    message.p("\n");
-                    sprintf(count, "%i", getsockname(new_socket, (struct sockaddr*)&s->serv, (socklen_t*)&addrlen)); 
-                    message = message.c("WELCOME New Client Number ");
-                    message = message.c(count);
-                    s->broadCastToAll(message.get()->c_str());
-                    
-                    //inform user of socket number - used in send and receive commands  
-                    printf("New connection , socket fd is %d , ip is : %s , port : %d  \n" , new_socket , inet_ntoa(s->serv.sin_addr) , ntohs (s->serv.sin_port));   
-                
-                        
-                    puts("Welcome message sent successfully");
+                    sprintf(count, "%s:%d|", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
+                    s->dir.checkAddDir(count);
+                    s->broadCastToAll(s->dir.c_str());
                 }
 
 
@@ -140,9 +132,11 @@ class ServerReadListener : public Thread {
                         //incoming message  
                         if ((valread = (read( sd , buffer, 1024))) == 0)   
                         {   
+                            sockaddr_in addr;
+                            int addrlen = sizeof(addr);
                             //Somebody disconnected , get his details and print  
-                            getpeername(sd , (struct sockaddr*)&s->serv, (socklen_t*)&addrlen);   
-                            printf("Host disconnected , ip %s , port %d \n", inet_ntoa(s->serv.sin_addr) , ntohs(s->serv.sin_port));   
+                            getpeername(sd , (struct sockaddr*)&addr, (socklen_t*)&addrlen);   
+                            printf("Host disconnected , ip %s , port %d \n", inet_ntoa(addr.sin_addr) , ntohs(addr.sin_port));   
                                 
                             //Close the socket and mark as 0 in list for reuse  
                             close( sd );   
@@ -154,7 +148,6 @@ class ServerReadListener : public Thread {
                         {   
                             //set the string terminating NULL byte on the end  
                             //of the data read  
-                            printf("READ A MESSAGE");
                             buffer[valread] = '\0';   
                             send(sd , buffer , strlen(buffer) , 0 );
                             printf("Server recieved message : ");

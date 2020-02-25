@@ -35,7 +35,8 @@ int main(int argh, char** argv)
     }
 
     ThreadedClient* c = new ThreadedClient(input_ip, input_port, server_ip, server_port);
-    c->composeMessage("127.0.0.2", "HU FIREND");
+    sleep(1);
+    c->composeMessage("127.0.0.1:8333", "HU FIREND");
     c->readMessages();
 
     sleep(5);

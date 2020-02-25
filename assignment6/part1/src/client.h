@@ -12,6 +12,7 @@
 #include <string.h>
 #include "thread.h"
 #include "map.h"
+#include "directory.h"
 
 class Client : public Object {
     public:
@@ -28,8 +29,12 @@ class Client : public Object {
             struct sockaddr_in serv;
             assert((sock = socket(AF_INET, SOCK_STREAM, 0)) >= 0);
             serv.sin_family = AF_INET;
-            serv.sin_port = htons(server_port);
+            serv.sin_port = htons(port);
+            assert(inet_pton(AF_INET, ip, &serv.sin_addr)>0);
+            assert(bind(sock, (struct sockaddr *)&serv, sizeof(serv))>=0);
 
+            serv.sin_family = AF_INET;
+            serv.sin_port = htons(server_port);
             // Convert IP addresses from text to binary form
             assert(inet_pton(AF_INET, server_ip, &serv.sin_addr)>0);
             assert(connect(sock, (struct sockaddr *)&serv, sizeof(serv)) >= 0);
@@ -66,7 +71,7 @@ class ClientListener : public Thread {
         virtual void run() {
             char buffer[1024];
             while (read(c->sock, buffer, 1024) >= 0) {
-                printf("IP: %s | recieved message: %s\n", c->ip, buffer);
+                printf("IP: %s:%i | recieved message: %s\n", c->ip, c->port, buffer);
             }
             printf("%s will stop reading\n", c->ip);
         }
