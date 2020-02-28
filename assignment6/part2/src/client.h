@@ -12,72 +12,74 @@
 #include <string.h>
 #include "thread.h"
 #include "map.h"
+#include "deserialize_message.h"
 #include "directory.h"
 
-class Server : public Object {
+class Client : public Object {
     public:
+        int server_sock;
+        int listening_sock;
+        char* ip;
+        char* server_ip;
+        int port;
+        int server_port;
+        sockaddr_in listening_addr;
         Directory dir;
-        int server_fd;
-        int port = 8518;
-        sockaddr_in serv;
-        Lock l;
-        
 
-        Server(char* input_ip, int input_port) {
+        Client(char* ip, int input_port, char* server_ip, int server_port) {
             int opt=1;
             port = input_port;
-            assert((server_fd = socket(AF_INET, SOCK_STREAM, 0)) >= 0);
-            assert(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) != 0);
-            serv.sin_family = AF_INET;
-            serv.sin_port = htons(port);
+            assert((listening_sock = socket(AF_INET, SOCK_STREAM, 0)) >= 0);
+            assert(setsockopt(listening_sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) != 0);
+            listening_addr.sin_family = AF_INET;
+            listening_addr.sin_port = htons(port);
 
             // Convert IP addresses from text to binary form
-            assert(inet_pton(AF_INET, input_ip, &serv.sin_addr)>0);
-            assert(bind(server_fd, (struct sockaddr *)&serv, sizeof(serv)) >= 0);
-            assert(listen(server_fd, 10) >= 0);
+            assert(inet_pton(AF_INET, ip, &listening_addr.sin_addr)>0);
+            assert(bind(listening_sock, (struct sockaddr *)&listening_addr, sizeof(listening_addr)) >= 0);
+            assert(listen(listening_sock, 10) >= 0);
+
+            this->ip = ip;
+            this->server_ip = server_ip;
+            struct sockaddr_in serv;
+            assert((server_sock = socket(AF_INET, SOCK_STREAM, 0)) >= 0);
+            serv.sin_family = AF_INET;
+            serv.sin_port = htons(port);
+            assert(inet_pton(AF_INET, ip, &serv.sin_addr)>0);
+            assert(bind(server_sock, (struct sockaddr *)&serv, sizeof(serv))>=0);
+
+            serv.sin_family = AF_INET;
+            serv.sin_port = htons(server_port);
+            // Convert IP addresses from text to binary form
+            assert(inet_pton(AF_INET, server_ip, &serv.sin_addr)>0);
+            assert(connect(server_sock, (struct sockaddr *)&serv, sizeof(serv)) >= 0);
+            char* sending = new Register(listening_addr, 1, 1)->serialize();
+            send(server_sock, sending , strlen(sending) , 0 );
         }
 
-        void broadCastToAll(char* message) {
-            IntArray* sockets = dir.getSockets();
-            for (int x = 0; x < dir.getSize(); x++) {
-                send(sockets->get(x) , message, strlen(message) , 0 );
-            }
-
-        }
-
-        void sendMessage(char* ip, char* message) {
+        virtual void sendMessage(char* ip, const char* message) {
+            printf("SENDING : %s\n", message);
             send(dir.getSockForIp(ip) , message, strlen(message) , 0 );
         }
 
         virtual void closeSocket() {
-            close(server_fd);
+            close(server_sock);
         }
 
-};
-
-class ServerReadListener : public Thread {
-    public:
-        Server* s;
-
-        ServerReadListener(Server* s) {
-            this->s = s;
-        }
-
-        // from https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-without-multi-threading/
-        virtual void run() {
+        void acceptAndReadMessages() {
             char buffer[1024];
             fd_set readfds;
             int valread;
             while(true) {
                 //clear the socket set  
                 FD_ZERO(&readfds);
-                int max_clients = s->dir.getSize();
+                int max_clients = dir.getSize();
             
                 //add master socket to set  
-                FD_SET(s->server_fd, &readfds);   
-                int max_sd = s->server_fd;  
+                FD_SET(listening_sock, &readfds);   
+                int max_sd = listening_sock;  
 
-                IntArray* sockets = s->dir.getSockets(); 
+                IntArray* sockets = dir.getSockets(); 
                     
                 //add child sockets to set  
                 for ( int i = 0; i < max_clients; i++)   
@@ -100,22 +102,21 @@ class ServerReadListener : public Thread {
             
                 if ((activity < 0) && (errno!=EINTR))   
                 {   
-                    printf("server shutting down");
+                    printf("client exiting");
                     return; 
                 }   
                     
                 //If something happened on the master socket ,  
                 //then its an incoming connection  
-                if (FD_ISSET(s->server_fd, &readfds))   
+                if (FD_ISSET(listening_sock, &readfds))   
                 {   
                     int new_socket;
                     sockaddr_in addr;
                     int addrlen = sizeof(addr);
-                    assert((new_socket = accept(s->server_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen)) >= 0);
+                    assert((new_socket = accept(listening_sock, (struct sockaddr *)&addr, (socklen_t*)&addrlen)) >= 0);
                     char* count = new char[32];
                     sprintf(count, "%s:%d|", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
-                    s->dir.checkAddDir(count, new_socket);
-                    s->broadCastToAll(s->dir.c_str());
+                    dir.putSocketWithoutIp(new_socket);
                 }
 
 
@@ -138,7 +139,7 @@ class ServerReadListener : public Thread {
                             sprintf(count, "%s:%d|", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
                             //Close the socket and mark as 0 in list for reuse  
                             close( sd );   
-                            s->dir.remove(count); 
+                            dir.remove(count); 
                         }   
                             
                         //Echo back the message that came in  
@@ -146,33 +147,43 @@ class ServerReadListener : public Thread {
                         {   
                             //set the string terminating NULL byte on the end  
                             //of the data read  
-                            buffer[valread] = '\0';   
-                            send(sd , buffer , strlen(buffer) , 0 );
-                            printf("Server recieved message : ");
-                            StrBuff ip, mess;
-                            ip.p(buffer);
-                            ip.p("\n");
-                            int x = 3;
-                            if (buffer[0] == 'T') {
-                                while (buffer[x] != '|') {
-                                    ip.c(buffer[x]);
-                                    x += 1;
+                            this->p("\n recieved message - ");
+                            this->p(buffer);
+                            MessageDeserializer md;
+
+                            Message* m = md.deserialize(buffer);
+                            switch(m->getKind()) {
+                                case(MsgKind::Ack): {
+                                    // do nothing as we don't handle ACKS
                                 }
-                                x += 1;
-                                while(buffer[x] != '\0') {
-                                    mess.c(buffer[x]);
-                                    x += 1;
+                                case(MsgKind::Nack): {
+                                    //sends the previous message again.
+                                    
                                 }
-                                printf("IP IS : ");
-                                mess.p(ip.get());
-                                printf(" message is : ");
-                                ip.p(mess.get());
-                                printf("\n");
-                                //s->sendMessage(ip.get()->c_str(), mess.get()->c_str());
+                                case(MsgKind::Dir): {
+                                    dir.checkAddDir(m->asDir()->getIps());
+                                }
+                                case(MsgKind::Status): {
+                                    printf("%s:%i | RECIEVED MESSAGE - %s", ip, port, m->asStatus()->getMessage());
+                                    // proccessses Status
+                                }
                             }
                         }   
                     }   
                 } 
             }  
+        }
+};
+
+class ClientListener : public Thread {
+    public:
+        Client* c;
+
+        ClientListener(Client* c) {
+            this->c = c;
+        }
+
+        virtual void run() {
+            c->acceptAndReadMessages();
         }
 };

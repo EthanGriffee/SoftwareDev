@@ -3,6 +3,8 @@
 #include "array.h"
 #include "object.h"
 #include "string.h"
+#include "map.h"
+#include "message.h"
 #include <assert.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -19,64 +21,46 @@ class Directory : Object {
     public: 
         // Maps a string to a Int Wrapper containing a socket
         Map* ip_to_sock;
+        IntArray* sockets_without_ips;
         char* this_ip;
         int this_port;
 
         Directory() {
             ip_to_sock = new Map();
+            sockets_without_ips = new IntArray();
         }
 
-        Directory(char* dir) {
+        Directory(StringArray* dir) {
+            ip_to_sock = new Map();
+            sockets_without_ips = new IntArray();
 
-            StrBuff s;
-            
-            for (int x = 0; dir[x] != '\0'; x++) {
-                if (dir[x] == '|') {
-                    // ADD MAP TO INT
-                    ip_to_sock->set(s.get(), new IntObj(-1));
-                }
-                else {
-                    s.c(dir[x]);
-                }
+            for (int x = dir->getSize() - 1; x >= 0; x--) {
+                ip_to_sock->set(dir->get(x), new IntObj(-1));
             }
         }
 
-        char* c_str() {
-            StrBuff s;
-            s.c("DIRECTORY-");
-            String ** keys = ip_to_sock->keys();
-            for (int x = 0; x < ip_to_sock->size(); x++) {
-                s.c(keys[x]->c_str());
-                s.c("|");
+        void checkAddDir(StringArray* ips) {
+            for(int x = 0; x < ips->getSize(); x++) {
+                checkAddDir(ips->get(x));
             }
-
-            return s.get()->c_str();
         }
 
-        void checkAddDir(char* dir) {
-            checkAddDir(dir, -1);
+        void putSocketWithoutIp(int sock) {
+            sockets_without_ips->add(sock);
         }
 
-        void checkAddDir(char* dir, int sock) {
+        void checkAddDir(String* ip) {
+            checkAddDir(ip, -1);
+        }
+
+        void checkAddDir(String* ip, int sock) {
             StrBuff s;
-            s.p("ADDDING TO DIRECTIORY : ");
-            s.p(dir);
-            s.p("\n");
-            
-            int beg = 0;
-            for (int x = 0; dir[x] != '\0'; x++) {
-                if (dir[x] == '|') {
-                    char* d = new char[32];
-                    sprintf(d, "%.*s", x - beg, dir); 
-                    String* str = new String(d);
-                    s.p("THIS IS THE STRING : ");
-                    s.p(str->c_str());
-                    s.p("\n");
-                    if (!(ip_to_sock->has(str)))
-                    {
-                        ip_to_sock->set(str, new IntObj(sock));
-                    }
-                    beg = x + 1;
+            if (!(ip_to_sock->has(ip)))
+            {
+                ip_to_sock->set(ip, new IntObj(sock));
+                int index = sockets_without_ips->indexOf(sock);
+                if (index != -1) {
+                    sockets_without_ips->remove(index);
                 }
             }
         }
@@ -98,8 +82,17 @@ class Directory : Object {
                     returning->add(iobj->getInt());
                 }
             }
+            returning->addAll(sockets_without_ips);
             return returning;
+        }
 
+        StringArray* getIps() {
+            StringArray* returning = new StringArray();
+            String** keys = ip_to_sock->keys();
+            for (int x = 0; x < getSize(); x++) {
+                returning->add(keys[x]);
+            }
+            return returning;
         }
 
         int getSockForIp(char* ip) {

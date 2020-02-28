@@ -21,6 +21,7 @@ class Client : public Object {
         char* server_ip;
         int port;
         int server_port;
+        Directory d;
 
         Client(char* ip, int input_port, char* server_ip, int server_port) {
             port = input_port;
@@ -38,7 +39,7 @@ class Client : public Object {
             // Convert IP addresses from text to binary form
             assert(inet_pton(AF_INET, server_ip, &serv.sin_addr)>0);
             assert(connect(sock, (struct sockaddr *)&serv, sizeof(serv)) >= 0);
-            send(sock, ip , strlen(ip) , 0 );
+            send(sock, "SIGN UP" , strlen(ip) , 0 );
         }
 
         virtual void composeMessage(const char* ip, const char* message) {

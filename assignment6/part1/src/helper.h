@@ -59,4 +59,25 @@ class Sys {
   void OK(const char* m) { pln(m); }
   void t_true(bool p) { if (!p) myfail(); }
   void t_false(bool p) { if (p) myfail(); }
+
+  //substring of char*
+  char* substring(char* st, int pos, int len) {
+    char* pointer = new char[len];
+    for (int c = 0; c < len; c++) {
+      *(pointer+c) = *(st+pos);
+      st++;
+    }
+    *(pointer+len) = '\0';
+    return pointer;
+  }
+
+  char* parseUntilSeperator(char* c, int start_pos) {
+    int y = 0;
+    while (c[start_pos + y] != '|') {
+        y += 1;
+    }
+
+    char* c = this.substring(c, start_pos, y);
+  }
+
 };

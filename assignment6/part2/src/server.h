@@ -2,6 +2,8 @@
 
 #include "array.h"
 #include "object.h"
+#include "deserialize_message.h"
+#include "message.h"
 #include <assert.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -53,31 +55,20 @@ class Server : public Object {
             close(server_fd);
         }
 
-};
-
-class ServerReadListener : public Thread {
-    public:
-        Server* s;
-
-        ServerReadListener(Server* s) {
-            this->s = s;
-        }
-
-        // from https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-without-multi-threading/
-        virtual void run() {
+        void acceptAndReadMessages() {
             char buffer[1024];
             fd_set readfds;
             int valread;
             while(true) {
                 //clear the socket set  
                 FD_ZERO(&readfds);
-                int max_clients = s->dir.getSize();
+                int max_clients = dir.getSize();
             
                 //add master socket to set  
-                FD_SET(s->server_fd, &readfds);   
-                int max_sd = s->server_fd;  
+                FD_SET(server_fd, &readfds);   
+                int max_sd = server_fd;  
 
-                IntArray* sockets = s->dir.getSockets(); 
+                IntArray* sockets = dir.getSockets(); 
                     
                 //add child sockets to set  
                 for ( int i = 0; i < max_clients; i++)   
@@ -106,16 +97,15 @@ class ServerReadListener : public Thread {
                     
                 //If something happened on the master socket ,  
                 //then its an incoming connection  
-                if (FD_ISSET(s->server_fd, &readfds))   
+                if (FD_ISSET(server_fd, &readfds))   
                 {   
                     int new_socket;
                     sockaddr_in addr;
                     int addrlen = sizeof(addr);
-                    assert((new_socket = accept(s->server_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen)) >= 0);
+                    assert((new_socket = accept(server_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen)) >= 0);
                     char* count = new char[32];
                     sprintf(count, "%s:%d|", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
-                    s->dir.checkAddDir(count, new_socket);
-                    s->broadCastToAll(s->dir.c_str());
+                    dir.putSocketWithoutIp(new_socket);
                 }
 
 
@@ -138,7 +128,7 @@ class ServerReadListener : public Thread {
                             sprintf(count, "%s:%d|", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
                             //Close the socket and mark as 0 in list for reuse  
                             close( sd );   
-                            s->dir.remove(count); 
+                            dir.remove(count); 
                         }   
                             
                         //Echo back the message that came in  
@@ -146,33 +136,51 @@ class ServerReadListener : public Thread {
                         {   
                             //set the string terminating NULL byte on the end  
                             //of the data read  
-                            buffer[valread] = '\0';   
-                            send(sd , buffer , strlen(buffer) , 0 );
-                            printf("Server recieved message : ");
-                            StrBuff ip, mess;
-                            ip.p(buffer);
-                            ip.p("\n");
-                            int x = 3;
-                            if (buffer[0] == 'T') {
-                                while (buffer[x] != '|') {
-                                    ip.c(buffer[x]);
-                                    x += 1;
+                            this->p(buffer);
+                            MessageDeserializer md;
+
+                            Message* m = md.deserialize(buffer);
+                            switch(m->getKind()) {
+                                case(MsgKind::Ack): {
+                                    // do nothing as we don't handle ACKS
                                 }
-                                x += 1;
-                                while(buffer[x] != '\0') {
-                                    mess.c(buffer[x]);
-                                    x += 1;
+                                case(MsgKind::Nack): {
+                                    //sends the previous message again.
+                                    
                                 }
-                                printf("IP IS : ");
-                                mess.p(ip.get());
-                                printf(" message is : ");
-                                ip.p(mess.get());
-                                printf("\n");
-                                //s->sendMessage(ip.get()->c_str(), mess.get()->c_str());
+                                case(MsgKind::Register): {
+                                    sockaddr_in addr = m->asReg()->getSockAddr();
+                                    char* count = new char[32];
+                                    sprintf(count, "%s:%d|", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
+                                    dir.checkAddDir(new String(count), sd);
+                                    broadCastToAll(new Dir(dir, 1, 2)->serialize());
+                                }
+                                case(MsgKind::Dir): {
+                                    // proccessses dir
+                                }
+                                case(MsgKind::Status): {
+                                    // proccessses Status
+                                }
                             }
                         }   
                     }   
                 } 
             }  
+            
+        }
+
+};
+
+class ServerReadListener : public Thread {
+    public:
+        Server* s;
+
+        ServerReadListener(Server* s) {
+            this->s = s;
+        }
+
+        // runs the accept and read messages indefinetly
+        virtual void run() {
+            s->acceptAndReadMessages();
         }
 };
