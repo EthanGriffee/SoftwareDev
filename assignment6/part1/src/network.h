@@ -3,6 +3,10 @@
 #include "server.h"
 #include "client.h"
 
+
+/**
+ * Creats a threaded server that uses one thread to read and the other to write
+ */
 class ThreadedServer : public Server {
     public:
         ServerReadListener* read;
@@ -11,12 +15,17 @@ class ThreadedServer : public Server {
             read = new ServerReadListener(this);
 
         }
-
+        /**
+         * Starts the read thread
+         */
         void waitForConnectionsAndRead() {
             read->start();
         }
 };
 
+/**
+ * Creats a threaded client that uses one thread to read and the other to write
+ */
 class ThreadedClient : public Client {
     public:
         ClientListener* listen;
@@ -25,7 +34,10 @@ class ThreadedClient : public Client {
             listen = new ClientListener(this);
          }
 
-        void readMessages() {
+         /**
+         * Starts the read thread
+         */
+        void waitForConnectionsAndRead() {
             listen->start();
         }
 };

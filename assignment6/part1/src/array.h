@@ -1,6 +1,7 @@
 #pragma once
 #include <stdlib.h>
 #include "object.h"
+#include "deserialize.h"
 #include "string.h"
 
 // Wrapper for a Float
@@ -372,6 +373,19 @@ public:
     }
 
     /**
+     * Returns this Array as a char* 
+     **/
+    virtual char* serialize() {
+        char* buff = new char[2048];
+        sprintf(buff, "{Array|array=");
+        for(int x = 0; x < size; x++) {
+             sprintf(&buff[strlen(buff)], "%s", this->get(x)->serialize());
+        } 
+        sprintf(&buff[strlen(buff)], "|}");
+        return buff;
+    }
+
+    /**
      * Overriding the Object equals method. 
      * Returns if all the elements in this array and the given object are equal and 
      * in the same other. 
@@ -419,6 +433,10 @@ class StringArray : public Object {
             str_arr = new Array();
         }
         
+        StringArray(Array* arr) {
+            this->str_arr = arr;
+        }
+
         /**
          * Initalized this array with the characteristics of the passed in array.
          * @arg arr Array containing values to be used in initialization. 
@@ -611,6 +629,12 @@ class StringArray : public Object {
      **/
     size_t hash_me_() {
         return str_arr->hash() + 1;
+    }
+
+    char* serialize() {
+        char* buff = new char[2048];
+        sprintf(buff, "{StringArray|str_arr=%s|}", str_arr->serialize()); 
+        return buff;
     }
 
 };

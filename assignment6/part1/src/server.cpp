@@ -28,13 +28,10 @@ int main(int argh, char** argv)
         exit(1);
     }
 
-
-
     ThreadedServer* s = new ThreadedServer(input_ip, input_port);
     s->waitForConnectionsAndRead();
 
     sleep(10);
     s->p("closing");
-    s->closeSocket();
-
+    s->closeSockets();
 }

@@ -3,6 +3,7 @@
 #include <cstring>
 #include <string>
 #include <cassert>
+#include "serial.h"
 #include "object.h"
 
 /** An immutable string class that wraps a character array.
@@ -81,6 +82,13 @@ public:
         for (size_t i = 0; i < size_; ++i)
             hash = cstr_[i] + (hash << 6) + (hash << 16) - hash;
         return hash;
+    }
+
+    /** returns a char* representation of this*/
+    char* serialize() {
+        char* buff = new char[2048];
+        sprintf(buff, "{String|cstr_=%s|}", cstr_); 
+        return buff;
     }
  };
 

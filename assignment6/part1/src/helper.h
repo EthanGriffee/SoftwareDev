@@ -1,6 +1,7 @@
 #pragma once
 //lang::Cpp
 
+#include "serial.h"
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -9,7 +10,7 @@
  *  functions. This class has no data, constructors, destructors or
  *  virtual functions. Inheriting from it is zero cost.
  */
-class Sys {
+class Sys : public Serialize{
  public:
 
   // Printing functions
@@ -71,13 +72,36 @@ class Sys {
     return pointer;
   }
 
-  char* parseUntilSeperator(char* c, int start_pos) {
+  int parseUntilSeperator(char* c, int start_pos) {
     int y = 0;
     while (c[start_pos + y] != '|') {
         y += 1;
     }
-
-    char* c = this.substring(c, start_pos, y);
+    return y;
   }
 
+  int parseUntilClassSeperator(char* c, int start_pos) {
+    int y = 0;
+    int lcount = 0;
+    int rcount = 0;
+    while (c[start_pos + y] != '}' || lcount - 1 != rcount) {
+      if (c[start_pos + y] == '}') {
+        rcount += 1;
+      }
+      if (c[start_pos + y] == '{') {
+        lcount += 1;
+      }
+      y += 1;
+    }
+    return y + 1;
+  }
+
+
+  int parseUntilBracketSeperator(char* c, int start_pos) {
+    int y = 0;
+    while (c[start_pos + y] != ']') {
+        y += 1;
+    }
+    return y;
+  }
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include <stdlib.h>
+#include <math.h>
 #include "object.h"
 #include "deserialize.h"
 #include "string.h"
@@ -62,6 +63,43 @@ class BoolObj : public Object {
             return b;
         }
 };
+
+// Wrapper for a Boolean
+class DoubleObj : public Object {
+    public:
+        double d;
+
+        // sets the value of b to input_b
+        DoubleObj(double input_d) {
+            d = input_d;
+        }
+
+        DoubleObj(DoubleObj& d) {
+            d = d.getDouble();
+        }
+
+        // returns if other is a boolean that has the same b
+        bool equals(Object *other){
+            DoubleObj * d2 = dynamic_cast<DoubleObj*> (other);
+            if (d2 && fabs(d2->getDouble() - d) < .00001){
+                return true;
+            }
+            return false;
+        }
+
+        // returns b
+        double getDouble() {
+            return d;
+        }
+
+        char* serialize() {
+            char* buff = new char[2048];
+            sprintf(buff, "{DoubleObj|d=%lf|}", d); 
+            return buff;
+
+        }
+};
+
 
 // Wrapper for a Integer
 class IntObj : public Object{
@@ -1306,5 +1344,242 @@ class BoolArray : public Object {
      **/
     size_t hash_me_() {
         return bool_arr->hash_me_() + 4;
+    }
+};
+
+
+
+class DoubleArray : public Object {
+    public:
+        Array* double_arr;
+
+        /**
+         * Default constructor which will set the initial max-capacity to the array to 10. 
+         **/
+        DoubleArray() {
+            double_arr = new Array();
+        }
+
+        DoubleArray(Array* arr) {
+            this->double_arr = arr;
+        }
+
+        /**
+         * Initalized this array with the characteristics of the passed in array.
+         * @arg arr Array containing values to be used in initialization. 
+         **/
+        DoubleArray(DoubleArray* arr) {
+            double_arr = arr->double_arr;
+        }
+
+        /**
+         * Destructor which will free the memory of the underlying array as well. 
+         **/
+        ~DoubleArray() {
+            delete double_arr;
+        }
+
+        /**
+         * Will return the double at the provided index. if the index is invalid, 
+         * then the method will return -1
+         * @arg index Location to get the value in the array at. 
+         **/
+        double get(size_t index) {
+            Object* obj = double_arr->get(index); 
+            if (obj) {
+                return static_cast <DoubleObj*> (obj)->getDouble();
+            }
+            else {
+                perror("attempted to get index out of bounds");
+                exit(1);
+            }
+        }
+
+
+        /**
+         * Clears the array and reinitializes the underlying array to 10 spots with no elements. 
+         * Reinitializes the size to 0. 
+         **/
+        void clear() {
+            double_arr->clear();
+        }
+
+        /**
+         * Resizing the underlying array. And then copying over the elements to a new array with
+         * the updated size. 
+         * Default is doubling the array size when the max capacity of the 
+         * underlying array less the number of elements is 2. 
+         **/
+        void resize() {
+            double_arr->resize();
+        }
+
+        /**
+         * Returns the first index of the of given double. 
+         * If the object pointer is not found then -1 is returned.
+         * @arg to_find Object to find the index of. 
+         **/
+        int indexOf(double to_find) {
+            DoubleObj* to_find_obj = new DoubleObj(to_find);
+            int returning = double_arr->indexOf(to_find_obj);
+            delete to_find_obj;
+            return returning;
+        }
+
+    /**
+     * Adds the element provided to the end of the list.
+     *  The size is incremented by 1. If resizing the array is necessary, 
+     * then that should be done.
+     * @arg to_add int to be added to the array. 
+     **/
+    void add(double to_add) {
+        DoubleObj* double_obj = new DoubleObj(to_add);
+        double_arr->add(double_obj);
+    }
+
+    /**
+     * Adds the provided array to the end of the list, unless the given array is NULL, 
+     * then it will not be added. 
+     * Assuming a valid move, the size of this array is incremented by the size of the 
+     * added array. If resizing the array is necessary, then that should be done.
+     * @arg to_add Array of Objects that all need to be added to this array. 
+     **/
+    void addAll(DoubleArray* to_add) {
+        double_arr->addAll(to_add->double_arr);
+    }
+
+
+    
+    virtual void set(double to_add, size_t index) {
+        DoubleObj* obj = new DoubleObj(to_add);
+        return double_arr->set(obj, index);
+    }   
+
+    /**
+     * Adds the provided double at the given index. All elements previously at the index and
+     * to the right will be shifted accordingly. 
+     * If the index is invalid, then nothing will be added/shifted. 
+     * The size of this array is incremented by 1. 
+     * If resizing the array is necessary, then that should be done. 
+     * @arg to_add Object to be added to the array
+     * @arg index Location to add the Object at
+     **/
+    void add(double to_add, size_t index) {
+        DoubleObj* double_obj = new DoubleObj(to_add);
+        double_arr->add(double_obj, index);
+    }
+
+    /**
+     * Adds all the elements of the provided array at the given index, 
+     * unless the given array is NULL, then it will not be added. Otherwise, 
+     * all elements previously at the index and
+     * to the right will be shifted accordingly by the size of the procided array, 
+     * If the index is invalid, then nothing will be added/shifted.
+     * Assuming a valid move, the size of this array is incremented by the size of the 
+     * added array.  If resizing the array is necessary, then that should be done.
+     * @arg to_add Array of Objects to be added to the array
+     * @arg index Location to add the objects to the array at
+     **/
+    void addAll(DoubleArray* to_add, size_t index) {
+        double_arr->addAll(to_add->double_arr, index);
+    }
+
+    /**
+     * Returns the subarray starting from the provided index to the end of the array. 
+     * If the index is invalid, then the method returns NULL
+     * @arg index Starting place for the subarray
+     **/
+     DoubleArray* subArray(size_t index) {
+        DoubleArray* returning = new DoubleArray();
+        if (index > getSize()) {
+            return nullptr;
+        }
+        while(index < getSize()) {
+            returning->add(get(index));
+            index += 1;
+        }
+        return returning;
+     }
+
+    /**
+     * Returns the subarray starting from the provided index to the ending index
+     * The starting index must always be greater than the ending index. If either index is invalid, 
+     * then NULL is returned. The set is [start, end)
+     * @arg startIndex starting place for the subarray
+     * @arg endIndex location of the last object to be put in the subarray
+     **/
+    DoubleArray* subArray(size_t startIndex, size_t endIndex) {
+        DoubleArray* returning = new DoubleArray();
+        if (endIndex > getSize() || startIndex > endIndex) {
+            return nullptr;
+        }
+        while(endIndex < getSize()) {
+            returning->add(get(startIndex));
+            startIndex += 1;
+        }
+        return returning;
+    }
+
+    /**
+     * Removes the first instance of the given double in this array. If nothing 
+     * is found, then no action will occur. The size reduces by 1 if the 
+     * element is found.
+     * @arg to_remove float to be removed from the array
+     **/
+     void remove(double to_remove) {
+        DoubleObj* double_obj = new DoubleObj(to_remove);
+        double_arr->remove(double_obj);
+        delete double_obj;
+     }
+
+    /**
+     * Removes all instances of the given double in this array. If nothing 
+     * is found, then no action will occur. The size reduces the number of found
+     * elements there are.
+     * @arg to_remove int that all instances in the array will be removed of
+     **/
+     void removeAll(double to_remove) {
+        DoubleObj* double_obj = new DoubleObj(to_remove);
+        double_arr->removeAll(double_obj);
+        delete double_obj;
+     }
+
+    /**
+     * Returns number of elements in the array. 
+     **/
+    size_t getSize() {
+        return double_arr->getSize();
+    }
+
+    /**
+     * Overriding the Object equals method. 
+     * Returns if all the elements in this array and the given object are equal and 
+     * in the same other. 
+     * If the given object is NULL or not an array, then false will be returned.
+     * @arg other Object to check if this array is equal to
+     **/
+    bool equals(Object* other) {
+        DoubleArray* o = dynamic_cast<DoubleArray*> (other);
+        if (o)
+            return o->double_arr->equals(this->double_arr);
+        else {
+            return false;
+        }
+
+    }
+
+    /**
+     * Overriding the Object hash_me() method. 
+     * Hashes the array based on user specifications. Default implementation is
+     * to hash all internal elements and sum them up. 
+     **/
+    size_t hash_me_() {
+        return double_arr->hash_me_() + 4;
+    }
+
+    char* serialize() {
+        char* buff = new char[2048];
+        sprintf(buff, "{DoubleArray|double_arr=%s|}", double_arr->serialize()); 
+        return buff;
     }
 };

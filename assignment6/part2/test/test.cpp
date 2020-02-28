@@ -1,8 +1,10 @@
 #include "../src/helper.h"
 #include "../src/array.h"
+#include <math.h>
 #include "../src/message.h"
 #include "../src/deserialize_message.h"
 #include "../src/deserialize_array.h"
+#include "../src/deserialize_double_array.h"
 
 void testSubstring() {
     Sys s;
@@ -96,6 +98,42 @@ void testRegisterSerialization() {
     m->OK("Reg OK");
 }
 
+void testDoubleObjSerialization() {
+    DoubleObj* obj = new DoubleObj(12.12);
+    DoubleObjDeserializer dod; 
+    DoubleObj* new_obj = dod.deserialize(obj->serialize());
+    obj->t_true(new_obj->equals(obj));
+    obj->OK("DoubleObj OK");
+}
+
+void testDoubleArraySerialization() {
+    DoubleArray* arr = new DoubleArray();
+    arr->add(241);
+    arr->add(342.132343);
+    arr->add(65.32);
+    DoubleArrayDeserializer dad; 
+    DoubleArray* new_array = dad.deserialize(arr->serialize());
+    arr->t_true(fabs(241 - new_array->get(0)) < .00001);
+    arr->t_true(fabs(342.132343 - new_array->get(1)) < .00001);
+    arr->t_true(fabs(65.32 - new_array->get(2)) < .00001);
+    arr->OK("DoubleArray OK");
+}
+
+void testExitSerialization() {
+    sockaddr_in reg_addr;
+
+    reg_addr.sin_family = AF_INET;
+    reg_addr.sin_port = htons(8080);
+    assert(inet_pton(AF_INET, "127.0.0.1", &reg_addr.sin_addr)>0);
+
+    Exit* m = new Exit(reg_addr, 1, 1);
+    MessageDeserializer md; 
+    Message* message = md.deserialize(m->serialize());
+    Exit* m2 = dynamic_cast <Exit*> (message);
+    m->t_true(ntohs(m2->getSockAddr().sin_port) == 8080);
+    m->OK("Exit OK");
+}
+
 
 int main(int argc, char **argv) {
     testSubstring();
@@ -106,4 +144,7 @@ int main(int argc, char **argv) {
     testStringArraySerialization();
     testDirSerialization();
     testRegisterSerialization();
+    testDoubleObjSerialization();
+    testDoubleArraySerialization();
+    testExitSerialization();
 }

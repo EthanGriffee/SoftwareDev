@@ -18,10 +18,11 @@ class Ack;
 class Dir;
 class Status;
 class Register;
+class Exit;
 
 enum class MsgKind { Ack, Nack, Put,
                     Reply,  Get, WaitAndGet, Status,
-                    Kill,   Register,  Dir };
+                    Exit,   Register,  Dir };
 
  
 
@@ -107,6 +108,10 @@ class Message : public Object {
         }
 
         virtual Dir* asDir() {
+            return nullptr;
+        }
+                
+        virtual Exit* asExit() {
             return nullptr;
         }
 };
@@ -342,5 +347,77 @@ class Dir : public Message {
 
         virtual Dir* asDir() {
             return this;
+        }
+};
+
+class Exit : public Message {
+    public:
+        sockaddr_in client;
+
+        Exit(sockaddr_in client, size_t sender_, size_t target_) :  Message(sender_, target_) {
+            kind_ = MsgKind::Exit;
+            this->client = client;
+        }
+
+        Exit(char* reg) {
+            kind_ = MsgKind::Exit;
+            int x = 20;
+            int y;
+            assert(strcmp(substring(reg, 0, x), "{MESSAGE|kind_=Exit|") == 0);
+            assert(strcmp(substring(reg, x, 8), "sender_=") == 0);
+            x = x + 8;
+            y = this->parseUntilSeperator(reg, x);
+            char* c = this->substring(reg, x, y);
+            this->sender_ = strtol(c, nullptr, 10);
+            x = x + y;
+            x = x + 1;
+            assert(strcmp(substring(reg, x, 8), "target_=") == 0);
+            x = x + 8;
+            y = this->parseUntilSeperator(reg, x);
+            c = this->substring(reg, x, y);
+            this->target_ = strtol(c, nullptr, 10);
+            x = x + y;
+            x = x + 1;
+            assert(strcmp(substring(reg, x, 13), "client=[port=") == 0);
+            x = x + 13;
+            y = this->parseUntilSeperator(reg, x);
+            c = this->substring(reg, x, y);
+            x = x + y + 1;
+            client.sin_family = AF_INET;
+            client.sin_port = htons(strtol(c, nullptr, 10));
+            assert(strcmp(substring(reg, x, 3), "ip=") == 0);
+            x = x + 3;
+            y = this->parseUntilBracketSeperator(reg, x);
+            c = this->substring(reg, x, y);
+
+            // Convert IP addresses from text to binary form
+            assert(inet_pton(AF_INET, c, &client.sin_addr)>0);
+
+
+        }
+
+        virtual Exit* asExit() {
+            return this;
+        }
+
+        virtual sockaddr_in getSockAddr() {
+            return client;
+        } 
+
+        virtual char* serializeAditionalFields_() {
+            char* buff = new char[2048];
+            sprintf(buff, "client=[port=%d|ip=%s]|}", ntohs(client.sin_port), inet_ntoa(client.sin_addr));
+            return buff;
+
+        }
+
+        virtual bool equals(Object* other) {
+            Register* m = dynamic_cast<Register*> (other);
+            if(m) {
+                return this->kind_ == m->getKind() && this->sender_ == m->getSender() && this->target_ == m->getTarget();
+            }
+            else {
+                return false;
+            }
         }
 };

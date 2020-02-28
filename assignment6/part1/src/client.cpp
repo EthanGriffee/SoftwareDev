@@ -33,14 +33,15 @@ int main(int argh, char** argv)
         perror("Invalid arguments");
         exit(1);
     }
-
+    srand((unsigned)time(NULL));
+    int sleep_time = (rand() % 5) + 2;
+    printf("SLEEP TIME: %i,\n",sleep_time);
     ThreadedClient* c = new ThreadedClient(input_ip, input_port, server_ip, server_port);
-    sleep(1);
-    c->composeMessage("127.0.0.1:8333", "HU FIREND");
-    c->readMessages();
-
-    sleep(5);
+    c->waitForConnectionsAndRead();
+    sleep(sleep_time);
+    c->sendMessage(c->getIps()->get(0)->c_str(), "HELLO");
+    sleep(sleep_time);
     c->p("closing");
-    c->closeSocket();
+    c->closeSockets();
 
 }

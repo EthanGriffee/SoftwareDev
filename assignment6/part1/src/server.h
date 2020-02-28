@@ -2,6 +2,8 @@
 
 #include "array.h"
 #include "object.h"
+#include "deserialize_message.h"
+#include "message.h"
 #include <assert.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -14,15 +16,19 @@
 #include "map.h"
 #include "directory.h"
 
+/**
+ * represents a server that clients can connect to
+ */
 class Server : public Object {
     public:
         Directory dir;
         int server_fd;
-        int port = 8518;
+        int port;
         sockaddr_in serv;
-        Lock l;
         
-
+        /**
+         * Creates a server, listening at the given ip and port
+         **/
         Server(char* input_ip, int input_port) {
             int opt=1;
             port = input_port;
@@ -37,7 +43,12 @@ class Server : public Object {
             assert(listen(server_fd, 10) >= 0);
         }
 
-        void broadCastToAll(char* message) {
+        /**
+         *  sends a message to all sockets currently connected to the server
+         **/
+        void broadCastToAll(Message* mess) {
+            char* message = mess->serialize();
+            printf("SERVER - BROADCASTING MESSAGE :%s\n", message);
             IntArray* sockets = dir.getSockets();
             for (int x = 0; x < dir.getSize(); x++) {
                 send(sockets->get(x) , message, strlen(message) , 0 );
@@ -45,57 +56,51 @@ class Server : public Object {
 
         }
 
+        /**
+         *  sends a message to the specific ip passed in
+         **/
         void sendMessage(char* ip, char* message) {
             send(dir.getSockForIp(ip) , message, strlen(message) , 0 );
         }
 
-        virtual void closeSocket() {
+        /**
+         *  closes all sockets connected to this
+         **/
+        virtual void closeSockets() {
+            IntArray* int_arr = dir.getSockets();
+            for (int x =0; x < int_arr->getSize(); x++) {
+                close(int_arr->get(x));
+            }
             close(server_fd);
         }
 
-};
-
-class ServerReadListener : public Thread {
-    public:
-        Server* s;
-
-        ServerReadListener(Server* s) {
-            this->s = s;
-        }
-
-        // from https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-without-multi-threading/
-        virtual void run() {
+        /**
+         *  Accepts and reads all messages
+         **/
+        void acceptAndReadMessages() {
             char buffer[1024];
             fd_set readfds;
             int valread;
             while(true) {
                 //clear the socket set  
                 FD_ZERO(&readfds);
-                int max_clients = s->dir.getSize();
             
-                //add master socket to set  
-                FD_SET(s->server_fd, &readfds);   
-                int max_sd = s->server_fd;  
+                FD_SET(server_fd, &readfds);   
+                int max_sd = server_fd;  
 
-                IntArray* sockets = s->dir.getSockets(); 
+                IntArray* sockets = dir.getSockets(); 
+                int max_clients = sockets->getSize();
                     
                 //add child sockets to set  
                 for ( int i = 0; i < max_clients; i++)   
                 {   
-                    //socket descriptor  
                     int sd = sockets->get(i);   
-                        
-                    //if valid socket descriptor then add to read list  
                     if(sd > 0)   
                         FD_SET( sd , &readfds);   
-                        
-                    //highest file descriptor number, need it for the select function  
                     if(sd > max_sd)   
                         max_sd = sd;   
                 }   
-            
-                //wait for an activity on one of the sockets , timeout is NULL ,  
-                //so wait indefinitely  
+
                 int activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);   
             
                 if ((activity < 0) && (errno!=EINTR))   
@@ -104,18 +109,15 @@ class ServerReadListener : public Thread {
                     return; 
                 }   
                     
-                //If something happened on the master socket ,  
-                //then its an incoming connection  
-                if (FD_ISSET(s->server_fd, &readfds))   
+                if (FD_ISSET(server_fd, &readfds))   
                 {   
                     int new_socket;
                     sockaddr_in addr;
                     int addrlen = sizeof(addr);
-                    assert((new_socket = accept(s->server_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen)) >= 0);
+                    assert((new_socket = accept(server_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen)) >= 0);
                     char* count = new char[32];
-                    sprintf(count, "%s:%d|", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
-                    s->dir.checkAddDir(count, new_socket);
-                    s->broadCastToAll(s->dir.c_str());
+                    sprintf(count, "%s:%d", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
+                    dir.putSocketWithoutIp(new_socket);
                 }
 
 
@@ -135,44 +137,72 @@ class ServerReadListener : public Thread {
                             getpeername(sd , (struct sockaddr*)&addr, (socklen_t*)&addrlen);   
                             printf("Host disconnected , ip %s , port %d \n", inet_ntoa(addr.sin_addr) , ntohs(addr.sin_port));   
                             char* count = new char[32];
-                            sprintf(count, "%s:%d|", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
+                            sprintf(count, "%s:%d", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
                             //Close the socket and mark as 0 in list for reuse  
                             close( sd );   
-                            s->dir.remove(count); 
+                            dir.remove(count); 
                         }   
                             
-                        //Echo back the message that came in  
                         else 
                         {   
-                            //set the string terminating NULL byte on the end  
-                            //of the data read  
-                            buffer[valread] = '\0';   
-                            send(sd , buffer , strlen(buffer) , 0 );
-                            printf("Server recieved message : ");
-                            StrBuff ip, mess;
-                            ip.p(buffer);
-                            ip.p("\n");
-                            int x = 3;
-                            if (buffer[0] == 'T') {
-                                while (buffer[x] != '|') {
-                                    ip.c(buffer[x]);
-                                    x += 1;
+                            MessageDeserializer md;
+
+                            Message* m = md.deserialize(buffer);
+                            printf("SERVER RECIEVED MESSAGE - %s\n", m->msgKindAsChar());
+                            switch(m->getKind()) {
+                                case(MsgKind::Ack): {
+                                    // do nothing as we don't handle ACKS
                                 }
-                                x += 1;
-                                while(buffer[x] != '\0') {
-                                    mess.c(buffer[x]);
-                                    x += 1;
+                                case(MsgKind::Nack): {
+                                    //sends the previous message again.
+                                    
                                 }
-                                printf("IP IS : ");
-                                mess.p(ip.get());
-                                printf(" message is : ");
-                                ip.p(mess.get());
-                                printf("\n");
-                                //s->sendMessage(ip.get()->c_str(), mess.get()->c_str());
+                                case(MsgKind::Register): {
+                                    sockaddr_in addr = m->asReg()->getSockAddr();
+                                    char* count = new char[32];
+                                    sprintf(count, "%s:%d", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port)); 
+                                    dir.checkAddDir(new String(count), sd);
+                                    broadCastToAll(new Dir(dir, 1, 2));
+                                    break;
+                                }
+                                case(MsgKind::Dir): {
+                                    // proccessses dir
+                                }
+                                case(MsgKind::Status): {
+                                    // proccessses Status
+                                }
+                                case(MsgKind::Exit): {
+                                    sockaddr_in exit = m->asExit()->getSockAddr();
+                                    char* count = new char[32];
+                                    sprintf(count, "%s:%d", inet_ntoa(exit.sin_addr), ntohs(exit.sin_port)); 
+                                    printf("RECIEVED EXIT FROM %s \n", count);  
+                                    close( sd );   
+                                    dir.remove(count); 
+                                    break;
+                                }
                             }
                         }   
                     }   
                 } 
             }  
+            
+        }
+
+};
+
+/**
+ *  Class that runs the acceptAndReadMessages method of server indefently.
+ **/
+class ServerReadListener : public Thread {
+    public:
+        Server* s;
+
+        ServerReadListener(Server* s) {
+            this->s = s;
+        }
+
+        // runs the accept and read messages indefinetly
+        virtual void run() {
+            s->acceptAndReadMessages();
         }
 };
